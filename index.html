@@ -113,15 +113,186 @@
   .status-label.last { background: #fff3e0; color: #e65100; border: 1px solid #ffb74d; }
   .status-names { font-size: 0.82rem; color: #444; margin-top: 2px; }
 
+  /* Mobile scroll hint */
+  .scroll-hint {
+    display: none;
+    background: linear-gradient(90deg, transparent, #16213e);
+    color: #fff;
+    font-size: 0.75rem;
+    padding: 6px 12px;
+    text-align: left;
+    border-radius: 0;
+  }
+  .scroll-hint::before { content: "← גלול לצפייה מלאה"; }
+
   @media (max-width: 768px) {
-    body { padding: 8px; }
-    .header { padding: 20px 16px; border-radius: 12px 12px 0 0; }
-    .header h1 { font-size: 1.3rem; }
-    .legend { gap: 12px; padding: 10px 12px; }
-    .table-wrap { border-radius: 0 0 12px 12px; }
-    thead th { padding: 10px 8px; font-size: 0.82rem; }
-    tbody td { padding: 8px 6px; font-size: 0.82rem; }
-    .name { padding: 2px 7px; font-size: 0.78rem; margin: 1px 2px; }
+    body { padding: 6px; }
+    .header { padding: 16px 12px; border-radius: 10px 10px 0 0; }
+    .header h1 { font-size: 1.15rem; }
+    .header p { font-size: 0.8rem; }
+    
+    .legend { 
+      gap: 8px; 
+      padding: 8px 10px; 
+      justify-content: flex-start;
+      font-size: 0.75rem;
+    }
+    .legend-item { gap: 4px; font-size: 0.72rem; }
+    .legend-dot { width: 10px; height: 10px; }
+    .legend-separator { display: none; }
+    .legend-note { font-size: 0.68rem; width: 100%; text-align: center; margin-top: 4px; }
+    
+    .scroll-hint { display: block; }
+    
+    .table-wrap { 
+      border-radius: 0 0 10px 10px;
+      margin: 0 -6px;
+      width: calc(100% + 12px);
+    }
+    
+    table { min-width: 800px; }
+    thead th { 
+      padding: 8px 6px; 
+      font-size: 0.72rem; 
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    tbody td { 
+      padding: 6px 5px; 
+      font-size: 0.75rem; 
+    }
+    .date-cell { font-size: 0.78rem; }
+    .day-cell { font-size: 0.72rem; }
+    
+    .name { 
+      padding: 2px 5px; 
+      font-size: 0.68rem; 
+      margin: 1px 1px;
+      border-radius: 4px;
+    }
+    .count-badge {
+      font-size: 0.65rem;
+      padding: 1px 5px;
+      margin-left: 2px;
+    }
+    
+    .leaving-section {
+      margin-top: 5px;
+      padding-top: 5px;
+    }
+    .leaving-label { font-size: 0.65rem; }
+    
+    .status-label { 
+      font-size: 0.68rem; 
+      padding: 2px 6px;
+    }
+    .status-names { font-size: 0.7rem; }
+    
+    .week-sep td {
+      font-size: 0.75rem;
+      padding: 8px 10px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    body { padding: 4px; }
+    .header { padding: 14px 10px; }
+    .header h1 { font-size: 1rem; }
+    
+    table { min-width: 700px; }
+    thead th { padding: 6px 4px; font-size: 0.68rem; }
+    tbody td { padding: 5px 4px; font-size: 0.7rem; }
+    
+    .name { 
+      padding: 1px 4px; 
+      font-size: 0.62rem;
+    }
+    .name.officer { display: none; } /* Hide officers on very small screens */
+    
+    .leaving-section .name { font-size: 0.6rem; }
+  }
+
+  /* Summary Section */
+  .summary-section {
+    background: #fff;
+    border-radius: 16px;
+    margin-top: 20px;
+    padding: 24px 28px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    font-size: 0.88rem;
+    line-height: 1.7;
+  }
+  .summary-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #16213e;
+    margin-bottom: 12px;
+  }
+  .summary-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 16px;
+  }
+  .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+    font-size: 0.82rem;
+  }
+  .groups-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .group-card {
+    background: #f8f9ff;
+    border-radius: 8px;
+    padding: 14px;
+  }
+  .group-card strong { color: #16213e; }
+  .group-names { font-size: 0.82rem; color: #555; margin-top: 4px; }
+  .group-officers { font-size: 0.78rem; color: #1565c0; margin-top: 4px; }
+  .group-note { font-size: 0.78rem; color: #888; margin-top: 4px; }
+  
+  .info-box {
+    border-radius: 4px;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+  }
+  .info-box.blue {
+    background: #e3f2fd;
+    border-right: 3px solid #2196f3;
+  }
+  .info-box.blue strong { color: #1565c0; }
+  .info-box.green {
+    background: #e8f5e9;
+    border-right: 3px solid #4caf50;
+  }
+  .info-box.green strong { color: #2e7d32; }
+  .info-content { font-size: 0.85rem; margin-top: 6px; }
+  .summary-footer { font-size: 0.82rem; color: #555; }
+
+  @media (max-width: 768px) {
+    .summary-section {
+      margin: 12px -6px 0;
+      padding: 16px 12px;
+      border-radius: 10px;
+    }
+    .summary-title { font-size: 0.95rem; }
+    .summary-table { min-width: 500px; font-size: 0.72rem; }
+    .summary-table th, .summary-table td { padding: 4px 3px !important; }
+    .groups-grid { grid-template-columns: 1fr; gap: 10px; }
+    .group-card { padding: 10px; }
+    .group-card strong { font-size: 0.85rem; }
+    .group-names { font-size: 0.75rem; }
+    .group-officers { font-size: 0.72rem; }
+    .group-note { font-size: 0.72rem; }
+    .info-box { padding: 10px 12px; }
+    .info-box strong { font-size: 0.8rem; }
+    .info-content { font-size: 0.75rem; }
+    .summary-footer { font-size: 0.75rem; }
   }
 
   @media print {
@@ -160,6 +331,7 @@
     </div>
   </div>
 
+  <div class="scroll-hint"></div>
   <div class="table-wrap">
     <table>
       <thead>
@@ -754,10 +926,11 @@
   </div>
 
   <!-- Summary Section -->
-  <div style="background:#fff;border-radius:16px;margin-top:20px;padding:24px 28px;box-shadow:0 4px 24px rgba(0,0,0,0.08);font-size:0.88rem;line-height:1.7;">
-    <h2 style="font-size:1.1rem;font-weight:700;color:#16213e;margin-bottom:12px;">סיכום ספירה יומית</h2>
+  <div class="summary-section">
+    <h2 class="summary-title">סיכום ספירה יומית</h2>
 
-    <table style="width:100%;border-collapse:collapse;min-width:0;margin-bottom:16px;font-size:0.82rem;">
+    <div class="summary-table-wrap">
+    <table class="summary-table">
       <thead>
         <tr style="background:#f0f2f5;">
           <th style="padding:8px 10px;text-align:right;font-weight:600;border-bottom:2px solid #ddd;">תאריך</th>
@@ -788,25 +961,26 @@
         <tr><td style="padding:6px 10px;border-bottom:1px solid #eee;">17/03 ג׳</td><td style="text-align:center;border-bottom:1px solid #eee;">3</td><td style="text-align:center;border-bottom:1px solid #eee;">7</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;font-weight:700;background:#f8f9ff;">14</td><td style="border-bottom:1px solid #eee;"></td></tr>
       </tbody>
     </table>
+    </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
-      <div style="background:#f8f9ff;border-radius:8px;padding:14px;">
-        <strong style="color:#16213e;">קבוצה 1 (7 לוחמים + 4 קצינים)</strong>
-        <div style="font-size:0.82rem;color:#555;margin-top:4px;">אנגלנדר, טלדן, יעקב, שיינר, יוני, גרינקר, פסח</div>
-        <div style="font-size:0.78rem;color:#1565c0;margin-top:4px;">קצין אגמ¹, מחט¹, קמן¹, קצין קשר¹</div>
-        <div style="font-size:0.78rem;color:#888;margin-top:4px;">מתחילים 5-on ב-04/03</div>
+    <div class="groups-grid">
+      <div class="group-card">
+        <strong>קבוצה 1 (7 לוחמים + 4 קצינים)</strong>
+        <div class="group-names">אנגלנדר, טלדן, יעקב, שיינר, יוני, גרינקר, פסח</div>
+        <div class="group-officers">קצין אגמ¹, מחט¹, קמן¹, קצין קשר¹</div>
+        <div class="group-note">מתחילים 5-on ב-04/03</div>
       </div>
-      <div style="background:#f8f9ff;border-radius:8px;padding:14px;">
-        <strong style="color:#16213e;">קבוצה 2 (7 לוחמים + 4 קצינים)</strong>
-        <div style="font-size:0.82rem;color:#555;margin-top:4px;">רוני, גולני, נבו, חנוך, בלכר, אבי, ארזואן</div>
-        <div style="font-size:0.78rem;color:#1565c0;margin-top:4px;">קצין אגמ², מחט², קמן², קצין קשר²</div>
-        <div style="font-size:0.78rem;color:#888;margin-top:4px;">מתחילים 5-off ב-04/03</div>
+      <div class="group-card">
+        <strong>קבוצה 2 (7 לוחמים + 4 קצינים)</strong>
+        <div class="group-names">רוני, גולני, נבו, חנוך, בלכר, אבי, ארזואן</div>
+        <div class="group-officers">קצין אגמ², מחט², קמן², קצין קשר²</div>
+        <div class="group-note">מתחילים 5-off ב-04/03</div>
       </div>
     </div>
 
-    <div style="background:#e3f2fd;border-right:3px solid #2196f3;border-radius:4px;padding:12px 16px;margin-bottom:12px;">
-      <strong style="color:#1565c0;">📋 הסבר רוטציה 5-on → 2-off → 2-on → 5-off:</strong>
-      <div style="font-size:0.85rem;margin-top:6px;">
+    <div class="info-box blue">
+      <strong>📋 הסבר רוטציה 5-on → 2-off → 2-on → 5-off:</strong>
+      <div class="info-content">
         <strong>5-on:</strong> 5 ימים בבסיס (4 נספרים + יום יציאה)<br>
         <strong>2-off:</strong> יוצאים → יומיים בבית → חוזרים<br>
         <strong>2-on:</strong> 3 ימים בבסיס (2 נספרים + יום יציאה)<br>
@@ -814,12 +988,12 @@
       </div>
     </div>
 
-    <div style="background:#e8f5e9;border-right:3px solid #4caf50;border-radius:4px;padding:12px 16px;margin-bottom:12px;">
-      <strong style="color:#2e7d32;">✓ סידור מאוזן — 7 לוחמים כל יום!</strong>
-      <span style="font-size:0.85rem;">הקבוצות מתחלפות בצורה שתמיד יש קבוצה אחת בבסיס.</span>
+    <div class="info-box green">
+      <strong>✓ סידור מאוזן — 7 לוחמים כל יום!</strong>
+      <span class="info-content">הקבוצות מתחלפות בצורה שתמיד יש קבוצה אחת בבסיס.</span>
     </div>
 
-    <div style="font-size:0.82rem;color:#555;">
+    <div class="summary-footer">
       <strong>סיכום:</strong>
       נהגים ≥3 ✓ · 7 לוחמים כל יום ✓ · קצין אחד מכל תפקיד כל יום ✓
     </div>

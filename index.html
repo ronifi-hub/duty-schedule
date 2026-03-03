@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>לוח תורנויות - 4-17 מרץ 2026</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: #f0f2f5;
+    color: #1a1a2e;
+    padding: 20px;
+    direction: rtl;
+    line-height: 1.6;
+  }
+
+  .container { max-width: 1400px; margin: 0 auto; }
+
+  .header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: #fff;
+    padding: 28px 32px;
+    border-radius: 16px 16px 0 0;
+    text-align: center;
+  }
+  .header h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 4px; }
+  .header p { font-size: 0.95rem; opacity: 0.8; }
+
+  .legend {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 14px 20px;
+    background: #fff;
+    border-bottom: 1px solid #e0e0e0;
+    flex-wrap: wrap;
+  }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 500; }
+  .legend-dot { width: 14px; height: 14px; border-radius: 4px; flex-shrink: 0; }
+  .legend-dot.gray { background: #f0f2f5; border: 1px solid #ccc; }
+  .legend-dot.green { background: #c8e6c9; border: 1px solid #81c784; }
+  .legend-dot.amber { background: #fff3e0; border: 1px solid #ffb74d; }
+  .legend-separator { color: #ccc; font-size: 1rem; }
+  .legend-note { font-size: 0.78rem; color: #666; font-style: italic; }
+
+  .table-wrap {
+    background: #fff;
+    border-radius: 0 0 16px 16px;
+    overflow-x: auto;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table { width: 100%; border-collapse: collapse; min-width: 1100px; }
+
+  thead th {
+    background: #16213e; color: #fff;
+    padding: 14px 12px; font-weight: 600; font-size: 0.9rem;
+    text-align: right; position: sticky; top: 0; white-space: nowrap;
+  }
+
+  tbody td {
+    padding: 12px; border-bottom: 1px solid #eee;
+    font-size: 0.88rem; vertical-align: top;
+  }
+  tbody tr { background: #fff; }
+  tbody tr:hover { background: #f8f9ff; }
+
+  .week-sep td {
+    background: #16213e; color: #fff; font-weight: 700;
+    font-size: 0.85rem; padding: 10px 16px; text-align: center; letter-spacing: 0.5px;
+  }
+
+  .date-cell { font-weight: 700; white-space: nowrap; font-size: 0.9rem; color: #16213e; }
+  .day-cell { font-weight: 600; white-space: nowrap; color: #555; }
+
+  .name {
+    display: inline-block; padding: 2px 8px; margin: 2px 2px;
+    border-radius: 6px; font-size: 0.8rem; font-weight: 500;
+    background: #f0f2f5; white-space: nowrap;
+  }
+  .name.arrival { background: #c8e6c9; color: #2e7d32; border: 1px solid #a5d6a7; }
+  .name.last-day { background: #fff3e0; color: #e65100; border: 1px solid #ffb74d; }
+  .name.officer { background: #e3f2fd; color: #1565c0; border: 1px solid #90caf9; }
+
+  .count-badge {
+    display: inline-block; font-size: 0.75rem; font-weight: 700;
+    background: #16213e; color: #fff; padding: 2px 8px;
+    border-radius: 10px; margin-left: 4px; vertical-align: middle;
+  }
+
+  .cell-section { margin-bottom: 6px; }
+  .cell-section:last-child { margin-bottom: 0; }
+
+  .leaving-section {
+    margin-top: 8px; padding-top: 8px;
+    border-top: 2px dashed #ffb74d;
+  }
+  .leaving-label {
+    display: inline-block; font-size: 0.72rem; font-weight: 600;
+    color: #e65100; margin-bottom: 4px;
+  }
+
+  .status-group { margin-bottom: 6px; }
+  .status-group:last-child { margin-bottom: 0; }
+  .status-label {
+    display: inline-block; font-weight: 700; font-size: 0.8rem;
+    padding: 3px 10px; border-radius: 6px; margin-bottom: 4px;
+  }
+  .status-label.arrival { background: #c8e6c9; color: #2e7d32; border: 1px solid #a5d6a7; }
+  .status-label.last { background: #fff3e0; color: #e65100; border: 1px solid #ffb74d; }
+  .status-names { font-size: 0.82rem; color: #444; margin-top: 2px; }
+
+  @media (max-width: 768px) {
+    body { padding: 8px; }
+    .header { padding: 20px 16px; border-radius: 12px 12px 0 0; }
+    .header h1 { font-size: 1.3rem; }
+    .legend { gap: 12px; padding: 10px 12px; }
+    .table-wrap { border-radius: 0 0 12px 12px; }
+    thead th { padding: 10px 8px; font-size: 0.82rem; }
+    tbody td { padding: 8px 6px; font-size: 0.82rem; }
+    .name { padding: 2px 7px; font-size: 0.78rem; margin: 1px 2px; }
+  }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .table-wrap { box-shadow: none; }
+    .header { background: #16213e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    thead th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .name.arrival, .name.last-day, .name.officer { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>לוח תורנויות — 4-17 מרץ 2026</h1>
+    <p>סידור דו-שבועי לנהגים ולוחמים בבסיס</p>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-dot gray"></div>
+      <span>נשאר (נספר)</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot green"></div>
+      <span>↑ מגיע (נספר)</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot amber"></div>
+      <span>⟵ יוצא בערב (לא נספר)</span>
+    </div>
+    <div class="legend-item legend-separator">|</div>
+    <div class="legend-item">
+      <span class="legend-note">נהגים 10/4 · לוחמים: 5-on → 2-off → 2-on → 5-off</span>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:70px;">תאריך</th>
+          <th style="width:40px;">יום</th>
+          <th style="width:200px;">נהגים בבסיס</th>
+          <th style="width:450px;">לוחמים בבסיס</th>
+          <th style="width:240px;">הערות ושינויים</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <!-- ===== WEEK 1 ===== -->
+        <tr class="week-sep"><td colspan="5">שבוע 1 — 4-10 מרץ</td></tr>
+
+        <!-- 04/03 Wed - G1: 5-on arrive, G2: 5-off depart -->
+        <tr>
+          <td class="date-cell">04/03</td>
+          <td class="day-cell">ד׳</td>
+          <td>
+            <div class="cell-section">
+              <span class="count-badge">3</span>
+              <span class="name">אליהו</span>
+              <span class="name">ידידיה</span>
+              <span class="name">עמית</span>
+            </div>
+            <div class="leaving-section">
+              <span class="leaving-label">יוצא בערב:</span>
+              <span class="name last-day">ג׳וני ⟵</span>
+            </div>
+          </td>
+          <td>
+            <div class="cell-section">
+              <span class="count-badge">7</span>
+              <span class="name">אנגלנדר</span>
+              <span class="name">טלדן</span>
+              <span class="name">יעקב</span>
+              <span class="name">שיינר</span>
+              <span class="name">יוני</span>
+              <span class="name">גרינקר</span>
+              <span class="name">פסח</span>
+              <span class="name officer">קצין אגמ¹</span>
+              <span class="name officer">מחט¹</span>
+              <span class="name officer">קמן¹</span>
+              <span class="name officer">קצין קשר¹</span>
+            </div>
+            <div class="leaving-section">
+              <span class="leaving-label">יוצאים בערב:</span>
+              <span class="name last-day">רוני ⟵</span>
+              <span class="name last-day">גולני ⟵</span>
+              <span class="name last-day">נבו ⟵</span>
+              <span class="name last-day">חנוך ⟵</span>
+              <span class="name last-day">בלכר ⟵</span>
+              <span class="name last-day">אבי ⟵</span>
+              <span class="name last-day">ארזואן ⟵</span>
+            </div>
+          </td>
+          <td>
+            <div class="status-group">
+              <div class="status-label last">⟵ יוצאים</div>
+              <div class="status-names">קבוצה 2 — יום 1/5 off</div>
+            </div>
+            <div class="status-names" style="color:#888;margin-top:4px;">קבוצה 1 — יום 1/5 on (בבסיס)</div>
+          </td>
+        </tr>
+
+        <!-- 05/03 Thu -->
+        <tr>
+          <td class="date-cell">05/03</td>
+          <td class="day-cell">ה׳</td>
+          <td>
+            <span class="count-badge">3</span>
+            <span class="name">אליהו</span>
+            <span class="name">ידידיה</span>
+            <span class="name">עמית</span>
+          </td>
+          <td>
+            <span class="count-badge">7</span>
+            <span class="name">אנגלנדר</span>
+            <span class="name">טלדן</span>
+            <span class="name">יעקב</span>
+            <span class="name">שיינר</span>
+            <span class="name">יוני</span>
+            <span class="name">גרינקר</span>
+            <span class="name">פסח</span>
+            <span class="name officer">קצין אגמ¹</span>
+            <span class="name officer">מחט¹</span>
+            <span class="name officer">קמן¹</span>
+            <span class="name officer">קצין קשר¹</span>
+          </td>
+          <td>
+            <div class="status-names" style="color:#888;">קבוצה 1 — יום 2/5 on</div>
+          </td>
+        </tr>
+
+        <!-- 06/03 Fri -->
+        <tr>
+          <td class="date-cell">06/03</td>
+          <td class="day-cell">ו׳</td>
+          <td>
+            <div class="cell-section">
+              <span class="count-badge">4</span>
+              <span class="name">אליהו</span>
+              <span class="name">ידידיה</span>
+              <span class="name">עמית</span>
+              <span class="name arrival">מנחם ↑</span>
+            </div>
+          </td>
+          <td>
+            <span class="count-badge">7</span>
+            <span class="name">אנגלנדר</span>
+            <span class="name">טלדן</span>
+            <span class="name">יעקב</span>
+            <span class="name">שיינר</span>
+            <span class="name">יוני</span>
+            <span class="name">גרינקר</span>
+            <span class="name">פסח</span>
+            <span class="name officer">קצין אגמ¹</span>
+            <span class="name officer">מחט¹</span>
+            <span class="name officer">קמן¹</span>
+            <span class="name officer">קצין קשר¹</span>
+          </td>
+          <td>
+            <div class="status-group">
+              <div class="status-label arrival">↑ הגעה</div>
+              <div class="status-names">מנחם (נהג)</div>
+            </div>
+            <div class="status-names" style="color:#888;margin-top:4px;">קבוצה 1 — יום 3/5 on</div>
+          </td>
+        </tr>
+
+        <!-- 07/03 Sat -->
+        <tr>
+          <td class="date-cell">07/03</td>
+          <td class="day-cell">ש׳</td>
+          <td>
+            <div class="cell-section">
+              <span class="count-badge">3</span>
+              <span class="name">אליהו</span>
+              <span class="name">ידידיה</span>
+              <span class="name">מנחם</span>
+            </div>
+            <div class="leaving-section">
+              <span class="leaving-label">יוצא בערב:</span>
+              <span class="name last-day">עמית ⟵</span>
+            </div>
+          </td>
+          <td>
+            <span class="count-badge">7</span>
+            <span class="name">אנגלנדר</span>
+            <span class="name">טלדן</span>
+            <span class="name">יעקב</span>
+            <span class="name">שיינר</span>
+            <span class="name">יוני</span>
+            <span class="name">גרינקר</span>
+            <span class="name">פסח</span>
+            <span class="name officer">קצין אגמ¹</span>
+            <span class="name officer">מחט¹</span>
+            <span class="name officer">קמן¹</span>
+            <span class="name officer">קצין קשר¹</span>
+          </td>
+          <td>
+            <div class="status-group">
+              <div class="status-label last">⟵ יום אחרון</div>
+              <div class="status-names">עמית (נהג, off 08-11)</div>
+            </div>
+            <div class="status-names" style="color:#888;margin-top:4px;">קבוצה 1 — יום 4/5 on</div>
+          </td>
+        </tr>
+
+        <!-- 08/03 Sun - G1: 5-on DEPART, G2: 2-on arrive -->
+        <tr>
+          <td class="date-cell">08/03</td>
+          <td class="day-cell">א׳</td>
+          <td>
+            <span class="count-badge">3</span>
+            <span class="name">אליהו</span>
+            <span class="name">ידידיה</span>
+            <span class="name">מנחם</span>
+          </td>
+          <td>
+            <div class="cell-section">
+              <span class="count-badge">7</span>
+              <span class="name arrival">רוני ↑</span>
+              <span class="name arrival">גולני ↑</span>
+              <span class="name arrival">נבו ↑</span>
+              <span class="name arrival">חנוך ↑</span>
+              <span class="name arrival">בלכר ↑</span>
+              <span class="name arrival">אבי ↑</span>
+              <span class="name arrival">ארזואן ↑</span>
+              <span class="name officer">קצין אגמ²</span>
+              <span class="name officer">מחט²</span>
+              <span class="name officer">קמן²</span>
+              <span class="name officer">קצין קשר²</span>
+            </div>
+            <div class="leaving-section">
+              <span class="leaving-label">יוצאים בערב (יום א׳):</span>
+              <span class="name last-day">אנגלנדר ⟵</span>
+              <span class="name last-day">טלדן ⟵</span>
+              <span class="name last-day">יעקב ⟵</span>
+              <span class="name last-day">שיינר ⟵</span>
+              <span class="name last-day">יוני ⟵</span>
+              <span class="name last-day">גרינקר ⟵</span>
+              <span class="name last-day">פסח ⟵</span>
+            </div>
+          </td>
+          <td>
+            <div class="status-group">
+              <div class="status-label arrival">↑ הגעה</div>
+              <div class="status-names">קבוצה 2 — יום 1/2 on</div>
+            </div>
+            <div class="status-group">
+              <div class="status-label last">⟵ יוצאים יום א׳</div>
+              <div class="status-names">קבוצה 1 — יום 5/5 on → 2-off</div>
+            </div>
+          </td>
+        </tr>
+
+        <!-- 09/03 Mon - G1: 2-off, G2: 2-on stay -->
+        <tr>
+          <td class="date-cell">09/03</td>
+          <td class="day-cell">ב׳</td>
+          <td>
+            <div class="cell-section">
+              <span class="count-badge">4</span>
+              <span class="name">אליהו</span>
+              <span class="name">ידידיה</span>
+              <span class="name arrival">ג׳וני ↑</span>
+              <span class="name">מנחם</span>
+            </div>
+          </td>
+          <td>
+            <span class="count-badge">7</span>
+            <span class="name">רוני</span>
+            <span class="name">גולני</span>
+            <span class="name">נבו</span>
+            <span class="name">חנוך</span>
+            <span class="name">בלכר</span>
+            <span class="name">אבי</span>
+            <span class="name">ארזואן</span>
+            <span class="name officer">קצין אגמ²</span>
+            <span class="name officer">מחט²</span>
+            <span class="name officer">קמן²</span>
+            <span class="name officer">קצין קשר²</span>
+          </td>
+          <td>
+            <div class="status-group">
+              <div class="status-label arrival">↑ הגעה</div>
+              <div class="status-names">ג׳וני (נהג)</div>
+            </div>
+            <div class="status-names" style="color:#888;margin-top:4px;">קבוצה 1 — יום 2/2 off (בבית)</div>
+            <div class="status-names" style="color:#888;">קבוצה 2 — יום 2/2 on</div>
+          </td>
+        </tr>
+
+        <!-- 10/03 Tue - G1: 2-on arrive, G2: 2-on DEPART -->
+        <tr>
+          <td class="date-cell">10/03</td>
+          <td class="day-cell">ג׳</td>
+          <td>
+            <div class="cell-section">
+              <span class="count-badge">3</span>
+              <span class="name">אליהו</span>
+              <span class="name">ג׳וני</span>
+              <span class="name">מנחם</span>
+            </div>
+            <div class="leaving-section">
+              <span class="leaving-label">יוצא בערב:</span>
+              <span class="name last-day">ידידיה ⟵</span>
+            </div>
+          </td>
+          <td>
+            <div class="cell-section">
+              <span class="count-badge">7</span>
+              <span class="name arrival">אנגלנדר ↑</span>
+              <span class="name arrival">טלדן ↑</span>
+              <span class="name arrival">יעקב ↑</span>
+              <span class="name arrival">שיינר ↑</span>
+              <span class="name arrival">יוני ↑</span>
+              <span class="name arrival">גרינקר ↑</span>
+              <span class="name arrival">פסח ↑</span>
+              <span class="name officer">קצין אגמ¹</span>
+              <span class="name officer">מחט¹</span>
+              <span class="name officer">קמן¹</span>
+              <span class="name officer">קצין קשר¹</span>
+            </div>
+            <div class="leaving-section">
+              <span class="leaving-label">יוצאים בערב (יום ג׳):</span>
+              <span class="name last-day">רוני ⟵</span>
+              <span class="name last-day">גולני ⟵</span>
+              <span class="name last-day">נבו ⟵</span>
+              <span class="name last-day">חנוך ⟵</span>
+              <span class="name last-day">בלכר ⟵</span>
+              <span class="name last-day">אבי ⟵</span>
+              <span class="name last-day">ארזואן ⟵</span>
+            </div>
+          </td>
+          <td>
+            <div class="status-group">
+              <div class="status-label arrival">↑ חוזרים יום ג׳</div>
+              <div class="status-names">קבוצה 1 — יום 1/2 on</div>
+            </div>
+            <div class="status-group">
+              <div class="status-label last">⟵ יוצאים יום ג׳</div>
+              <div class="status-names">קבוצה 2 — יום 3/2 on → 2-off</div>
+              <div class="status-names">ידידיה (נהג, off 11-14)</div>
+            </div>
+          </td>
+        </tr>
+
+        <!-- ===== WEEK 2 ===== -->
+        <tr class="week-sep"><td colspan="5">שבוע 2 — 11-17 מרץ</td></tr>
+
+        <!-- 11/03 Wed - G1: 2-on stay, G2: 2-off -->
+        <tr>
+          <td class="date-cell">11/03</td>
+          <td class="day-cell">ד׳</td>
+          <td>
+            <span class="count-badge">3</span>
+            <span class="name">אליהו</span>
+            <span class="name">ג׳וני</span>
+            <span class="name">מנחם</span>
+          </td>
+          <td>
+            <span class="count-badge">7</span>
+            <span class="name">אנגלנדר</span>
+            <span class="name">טלדן</span>
+            <span class="name">יעקב</span>
+            <span class="name">שיינר</span>
+            <span class="name">יוני</span>
+            <span class="name">גרינקר</span>
+            <span class="name">פסח</span>
+            <span class="name officer">קצין אגמ¹</span>
+            <span class="name officer">מחט¹</span>
+            <span class="name officer">קמן¹</span>
+            <span class="name officer">קצין קשר¹</span>
+          </td>
+          <td>
+            <div class="status-names" style="color:#888;">קבוצה 1 — יום 2/2 on</div>
+            <div class="status-names" style="color:#888;">קבוצה 2 — יום 2/2 off (בבית)</div>
+          </td>
+        </tr>
+
+        <!-- 12/03 Thu - G1: 2-on DEPART, G2: 5-on arrive -->
+        <tr>
+          <td class="date-cell">12/03</td>
+          <td class="day-cell">ה׳</td>
+          <td>
+            <div class="cell-section">
+              <span class="count-badge">4</span>
+              <span class="name">אליהו</span>
+              <span class="name arrival">עמית ↑</span>
+              <span class="name">ג׳וני</span>
+              <span class="name">מנחם</span>
+            </div>
+          </td>
+          <td>
+            <div class="cell-section">
+              <span class="count-badge">7</span>
+              <span class="name arrival">רוני ↑</span>
+              <span class="name arrival">גולני ↑</span>
+              <span class="name arrival">נבו ↑</span>
+              <span class="name arrival">חנוך ↑</span>
+              <span class="name arrival">בלכר ↑</span>
+              <span class="name arrival">אבי ↑</span>
+              <span class="name arrival">ארזואן ↑</span>
+              <span class="name officer">קצין אגמ²</span>
+              <span class="name officer">מחט²</span>
+              <span class="name officer">קמן²</span>
+              <span class="name officer">קצין קשר²</span>
+            </div>
+            <div class="leaving-section">
+              <span class="leaving-label">יוצאים בערב:</span>
+              <span class="name last-day">אנגלנדר ⟵</span>
+              <span class="name last-day">טלדן ⟵</span>
+              <span class="name last-day">יעקב ⟵</span>
+              <span class="name last-day">שיינר ⟵</span>
+              <span class="name last-day">יוני ⟵</span>
+              <span class="name last-day">גרינקר ⟵</span>
+              <span class="name last-day">פסח ⟵</span>
+            </div>
+          </td>
+          <td>
+            <div class="status-group">
+              <div class="status-label arrival">↑ חוזרים יום ה׳</div>
+              <div class="status-names">קבוצה 2 — יום 1/5 on</div>
+              <div class="status-names">עמית (נהג)</div>
+            </div>
+            <div class="status-group">
+              <div class="status-label last">⟵ יוצאים</div>
+              <div class="status-names">קבוצה 1 — יום 3/2 on → 5-off</div>
+            </div>
+          </td>
+        </tr>
+
+        <!-- 13/03 Fri - G1: 5-off, G2: 5-on stay -->
+        <tr>
+          <td class="date-cell">13/03</td>
+          <td class="day-cell">ו׳</td>
+          <td>
+            <div class="cell-section">
+              <span class="count-badge">3</span>
+              <span class="name">עמית</span>
+              <span class="name">ג׳וני</span>
+              <span class="name">מנחם</span>
+            </div>
+            <div class="leaving-section">
+              <span class="leaving-label">יוצא בערב:</span>
+              <span class="name last-day">אליהו ⟵</span>
+            </div>
+          </td>
+          <td>
+            <span class="count-badge">7</span>
+            <span class="name">רוני</span>
+            <span class="name">גולני</span>
+            <span class="name">נבו</span>
+            <span class="name">חנוך</span>
+            <span class="name">בלכר</span>
+            <span class="name">אבי</span>
+            <span class="name">ארזואן</span>
+            <span class="name officer">קצין אגמ²</span>
+            <span class="name officer">מחט²</span>
+            <span class="name officer">קמן²</span>
+            <span class="name officer">קצין קשר²</span>
+          </td>
+          <td>
+            <div class="status-group">
+              <div class="status-label last">⟵ יום אחרון</div>
+              <div class="status-names">אליהו (נהג, off 14-17)</div>
+            </div>
+            <div class="status-names" style="color:#888;margin-top:4px;">קבוצה 1 — יום 2/5 off (בבית)</div>
+            <div class="status-names" style="color:#888;">קבוצה 2 — יום 2/5 on</div>
+          </td>
+        </tr>
+
+        <!-- 14/03 Sat - G1: 5-off, G2: 5-on stay -->
+        <tr>
+          <td class="date-cell">14/03</td>
+          <td class="day-cell">ש׳</td>
+          <td>
+            <span class="count-badge">3</span>
+            <span class="name">עמית</span>
+            <span class="name">ג׳וני</span>
+            <span class="name">מנחם</span>
+          </td>
+          <td>
+            <span class="count-badge">7</span>
+            <span class="name">רוני</span>
+            <span class="name">גולני</span>
+            <span class="name">נבו</span>
+            <span class="name">חנוך</span>
+            <span class="name">בלכר</span>
+            <span class="name">אבי</span>
+            <span class="name">ארזואן</span>
+            <span class="name officer">קצין אגמ²</span>
+            <span class="name officer">מחט²</span>
+            <span class="name officer">קמן²</span>
+            <span class="name officer">קצין קשר²</span>
+          </td>
+          <td>
+            <div class="status-names" style="color:#888;">קבוצה 1 — יום 3/5 off (בבית)</div>
+            <div class="status-names" style="color:#888;">קבוצה 2 — יום 3/5 on</div>
+          </td>
+        </tr>
+
+        <!-- 15/03 Sun - G1: 5-off, G2: 5-on stay -->
+        <tr>
+          <td class="date-cell">15/03</td>
+          <td class="day-cell">א׳</td>
+          <td>
+            <div class="cell-section">
+              <span class="count-badge">3</span>
+              <span class="name arrival">ידידיה ↑</span>
+              <span class="name">עמית</span>
+              <span class="name">ג׳וני</span>
+            </div>
+            <div class="leaving-section">
+              <span class="leaving-label">יוצא בערב:</span>
+              <span class="name last-day">מנחם ⟵</span>
+            </div>
+          </td>
+          <td>
+            <span class="count-badge">7</span>
+            <span class="name">רוני</span>
+            <span class="name">גולני</span>
+            <span class="name">נבו</span>
+            <span class="name">חנוך</span>
+            <span class="name">בלכר</span>
+            <span class="name">אבי</span>
+            <span class="name">ארזואן</span>
+            <span class="name officer">קצין אגמ²</span>
+            <span class="name officer">מחט²</span>
+            <span class="name officer">קמן²</span>
+            <span class="name officer">קצין קשר²</span>
+          </td>
+          <td>
+            <div class="status-group">
+              <div class="status-label arrival">↑ הגעה</div>
+              <div class="status-names">ידידיה (נהג)</div>
+            </div>
+            <div class="status-group">
+              <div class="status-label last">⟵ יום אחרון</div>
+              <div class="status-names">מנחם (נהג, off 16-19)</div>
+            </div>
+            <div class="status-names" style="color:#888;margin-top:4px;">קבוצה 1 — יום 4/5 off (בבית)</div>
+            <div class="status-names" style="color:#888;">קבוצה 2 — יום 4/5 on</div>
+          </td>
+        </tr>
+
+        <!-- 16/03 Mon - G1: 5-on arrive, G2: 5-on DEPART -->
+        <tr>
+          <td class="date-cell">16/03</td>
+          <td class="day-cell">ב׳</td>
+          <td>
+            <span class="count-badge">3</span>
+            <span class="name">ידידיה</span>
+            <span class="name">עמית</span>
+            <span class="name">ג׳וני</span>
+          </td>
+          <td>
+            <div class="cell-section">
+              <span class="count-badge">7</span>
+              <span class="name arrival">אנגלנדר ↑</span>
+              <span class="name arrival">טלדן ↑</span>
+              <span class="name arrival">יעקב ↑</span>
+              <span class="name arrival">שיינר ↑</span>
+              <span class="name arrival">יוני ↑</span>
+              <span class="name arrival">גרינקר ↑</span>
+              <span class="name arrival">פסח ↑</span>
+              <span class="name officer">קצין אגמ¹</span>
+              <span class="name officer">מחט¹</span>
+              <span class="name officer">קמן¹</span>
+              <span class="name officer">קצין קשר¹</span>
+            </div>
+            <div class="leaving-section">
+              <span class="leaving-label">יוצאים בערב (יום ב׳):</span>
+              <span class="name last-day">רוני ⟵</span>
+              <span class="name last-day">גולני ⟵</span>
+              <span class="name last-day">נבו ⟵</span>
+              <span class="name last-day">חנוך ⟵</span>
+              <span class="name last-day">בלכר ⟵</span>
+              <span class="name last-day">אבי ⟵</span>
+              <span class="name last-day">ארזואן ⟵</span>
+            </div>
+          </td>
+          <td>
+            <div class="status-group">
+              <div class="status-label arrival">↑ חוזרים יום ב׳</div>
+              <div class="status-names">קבוצה 1 — יום 1/5 on</div>
+            </div>
+            <div class="status-group">
+              <div class="status-label last">⟵ יוצאים יום ב׳</div>
+              <div class="status-names">קבוצה 2 — יום 5/5 on → 2-off</div>
+            </div>
+          </td>
+        </tr>
+
+        <!-- 17/03 Tue - G1: 5-on stay, G2: 2-off -->
+        <tr>
+          <td class="date-cell">17/03</td>
+          <td class="day-cell">ג׳</td>
+          <td>
+            <span class="count-badge">3</span>
+            <span class="name">ידידיה</span>
+            <span class="name">עמית</span>
+            <span class="name">ג׳וני</span>
+          </td>
+          <td>
+            <span class="count-badge">7</span>
+            <span class="name">אנגלנדר</span>
+            <span class="name">טלדן</span>
+            <span class="name">יעקב</span>
+            <span class="name">שיינר</span>
+            <span class="name">יוני</span>
+            <span class="name">גרינקר</span>
+            <span class="name">פסח</span>
+            <span class="name officer">קצין אגמ¹</span>
+            <span class="name officer">מחט¹</span>
+            <span class="name officer">קמן¹</span>
+            <span class="name officer">קצין קשר¹</span>
+          </td>
+          <td>
+            <div class="status-names" style="color:#888;">קבוצה 1 — יום 2/5 on</div>
+            <div class="status-names" style="color:#888;">קבוצה 2 — יום 2/2 off (בבית)</div>
+            <div style="font-size:0.75rem;color:#888;margin-top:6px;">סוף תקופה — המשך לוח עוקב</div>
+          </td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Summary Section -->
+  <div style="background:#fff;border-radius:16px;margin-top:20px;padding:24px 28px;box-shadow:0 4px 24px rgba(0,0,0,0.08);font-size:0.88rem;line-height:1.7;">
+    <h2 style="font-size:1.1rem;font-weight:700;color:#16213e;margin-bottom:12px;">סיכום ספירה יומית</h2>
+
+    <table style="width:100%;border-collapse:collapse;min-width:0;margin-bottom:16px;font-size:0.82rem;">
+      <thead>
+        <tr style="background:#f0f2f5;">
+          <th style="padding:8px 10px;text-align:right;font-weight:600;border-bottom:2px solid #ddd;">תאריך</th>
+          <th style="padding:8px 10px;text-align:center;font-weight:600;border-bottom:2px solid #ddd;">נהגים</th>
+          <th style="padding:8px 10px;text-align:center;font-weight:600;border-bottom:2px solid #ddd;">לוחמים</th>
+          <th style="padding:8px 10px;text-align:center;font-weight:600;border-bottom:2px solid #ddd;">קצין אגמ</th>
+          <th style="padding:8px 10px;text-align:center;font-weight:600;border-bottom:2px solid #ddd;">מחט</th>
+          <th style="padding:8px 10px;text-align:center;font-weight:600;border-bottom:2px solid #ddd;">קמן</th>
+          <th style="padding:8px 10px;text-align:center;font-weight:600;border-bottom:2px solid #ddd;">קצין קשר</th>
+          <th style="padding:8px 10px;text-align:center;font-weight:600;border-bottom:2px solid #ddd;background:#16213e;color:#fff;">סה״כ</th>
+          <th style="padding:8px 10px;text-align:right;font-weight:600;border-bottom:2px solid #ddd;">הערה</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td style="padding:6px 10px;border-bottom:1px solid #eee;">04/03 ד׳</td><td style="text-align:center;border-bottom:1px solid #eee;">3</td><td style="text-align:center;border-bottom:1px solid #eee;">7</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;font-weight:700;background:#f8f9ff;">14</td><td style="border-bottom:1px solid #eee;color:#888;">G2 יוצא</td></tr>
+        <tr><td style="padding:6px 10px;border-bottom:1px solid #eee;">05/03 ה׳</td><td style="text-align:center;border-bottom:1px solid #eee;">3</td><td style="text-align:center;border-bottom:1px solid #eee;">7</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;font-weight:700;background:#f8f9ff;">14</td><td style="border-bottom:1px solid #eee;"></td></tr>
+        <tr><td style="padding:6px 10px;border-bottom:1px solid #eee;">06/03 ו׳</td><td style="text-align:center;border-bottom:1px solid #eee;">4</td><td style="text-align:center;border-bottom:1px solid #eee;">7</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;font-weight:700;background:#f8f9ff;">15</td><td style="border-bottom:1px solid #eee;"></td></tr>
+        <tr><td style="padding:6px 10px;border-bottom:1px solid #eee;">07/03 ש׳</td><td style="text-align:center;border-bottom:1px solid #eee;">3</td><td style="text-align:center;border-bottom:1px solid #eee;">7</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;font-weight:700;background:#f8f9ff;">14</td><td style="border-bottom:1px solid #eee;"></td></tr>
+        <tr><td style="padding:6px 10px;border-bottom:1px solid #eee;">08/03 א׳</td><td style="text-align:center;border-bottom:1px solid #eee;">3</td><td style="text-align:center;border-bottom:1px solid #eee;">7</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;font-weight:700;background:#f8f9ff;">14</td><td style="border-bottom:1px solid #eee;color:#888;">G1 יוצא א׳, G2 מגיע</td></tr>
+        <tr><td style="padding:6px 10px;border-bottom:1px solid #eee;">09/03 ב׳</td><td style="text-align:center;border-bottom:1px solid #eee;">4</td><td style="text-align:center;border-bottom:1px solid #eee;">7</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;font-weight:700;background:#f8f9ff;">15</td><td style="border-bottom:1px solid #eee;"></td></tr>
+        <tr><td style="padding:6px 10px;border-bottom:1px solid #eee;">10/03 ג׳</td><td style="text-align:center;border-bottom:1px solid #eee;">3</td><td style="text-align:center;border-bottom:1px solid #eee;">7</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;font-weight:700;background:#f8f9ff;">14</td><td style="border-bottom:1px solid #eee;color:#888;">G1 חוזר ג׳, G2 יוצא</td></tr>
+        <tr><td style="padding:6px 10px;border-bottom:1px solid #eee;">11/03 ד׳</td><td style="text-align:center;border-bottom:1px solid #eee;">3</td><td style="text-align:center;border-bottom:1px solid #eee;">7</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;font-weight:700;background:#f8f9ff;">14</td><td style="border-bottom:1px solid #eee;"></td></tr>
+        <tr><td style="padding:6px 10px;border-bottom:1px solid #eee;">12/03 ה׳</td><td style="text-align:center;border-bottom:1px solid #eee;">4</td><td style="text-align:center;border-bottom:1px solid #eee;">7</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;font-weight:700;background:#f8f9ff;">15</td><td style="border-bottom:1px solid #eee;color:#888;">G2 חוזר ה׳, G1 יוצא</td></tr>
+        <tr><td style="padding:6px 10px;border-bottom:1px solid #eee;">13/03 ו׳</td><td style="text-align:center;border-bottom:1px solid #eee;">3</td><td style="text-align:center;border-bottom:1px solid #eee;">7</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;font-weight:700;background:#f8f9ff;">14</td><td style="border-bottom:1px solid #eee;"></td></tr>
+        <tr><td style="padding:6px 10px;border-bottom:1px solid #eee;">14/03 ש׳</td><td style="text-align:center;border-bottom:1px solid #eee;">3</td><td style="text-align:center;border-bottom:1px solid #eee;">7</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;font-weight:700;background:#f8f9ff;">14</td><td style="border-bottom:1px solid #eee;"></td></tr>
+        <tr><td style="padding:6px 10px;border-bottom:1px solid #eee;">15/03 א׳</td><td style="text-align:center;border-bottom:1px solid #eee;">3</td><td style="text-align:center;border-bottom:1px solid #eee;">7</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;font-weight:700;background:#f8f9ff;">14</td><td style="border-bottom:1px solid #eee;"></td></tr>
+        <tr><td style="padding:6px 10px;border-bottom:1px solid #eee;">16/03 ב׳</td><td style="text-align:center;border-bottom:1px solid #eee;">3</td><td style="text-align:center;border-bottom:1px solid #eee;">7</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;font-weight:700;background:#f8f9ff;">14</td><td style="border-bottom:1px solid #eee;color:#888;">G1 חוזר ב׳, G2 יוצא</td></tr>
+        <tr><td style="padding:6px 10px;border-bottom:1px solid #eee;">17/03 ג׳</td><td style="text-align:center;border-bottom:1px solid #eee;">3</td><td style="text-align:center;border-bottom:1px solid #eee;">7</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;">1</td><td style="text-align:center;border-bottom:1px solid #eee;font-weight:700;background:#f8f9ff;">14</td><td style="border-bottom:1px solid #eee;"></td></tr>
+      </tbody>
+    </table>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+      <div style="background:#f8f9ff;border-radius:8px;padding:14px;">
+        <strong style="color:#16213e;">קבוצה 1 (7 לוחמים + 4 קצינים)</strong>
+        <div style="font-size:0.82rem;color:#555;margin-top:4px;">אנגלנדר, טלדן, יעקב, שיינר, יוני, גרינקר, פסח</div>
+        <div style="font-size:0.78rem;color:#1565c0;margin-top:4px;">קצין אגמ¹, מחט¹, קמן¹, קצין קשר¹</div>
+        <div style="font-size:0.78rem;color:#888;margin-top:4px;">מתחילים 5-on ב-04/03</div>
+      </div>
+      <div style="background:#f8f9ff;border-radius:8px;padding:14px;">
+        <strong style="color:#16213e;">קבוצה 2 (7 לוחמים + 4 קצינים)</strong>
+        <div style="font-size:0.82rem;color:#555;margin-top:4px;">רוני, גולני, נבו, חנוך, בלכר, אבי, ארזואן</div>
+        <div style="font-size:0.78rem;color:#1565c0;margin-top:4px;">קצין אגמ², מחט², קמן², קצין קשר²</div>
+        <div style="font-size:0.78rem;color:#888;margin-top:4px;">מתחילים 5-off ב-04/03</div>
+      </div>
+    </div>
+
+    <div style="background:#e3f2fd;border-right:3px solid #2196f3;border-radius:4px;padding:12px 16px;margin-bottom:12px;">
+      <strong style="color:#1565c0;">📋 הסבר רוטציה 5-on → 2-off → 2-on → 5-off:</strong>
+      <div style="font-size:0.85rem;margin-top:6px;">
+        <strong>5-on:</strong> 5 ימים בבסיס (4 נספרים + יום יציאה)<br>
+        <strong>2-off:</strong> יוצאים → יומיים בבית → חוזרים<br>
+        <strong>2-on:</strong> 3 ימים בבסיס (2 נספרים + יום יציאה)<br>
+        <strong>5-off:</strong> 5 ימים בבית (יום יציאה + 3 בבית + יום הגעה)
+      </div>
+    </div>
+
+    <div style="background:#e8f5e9;border-right:3px solid #4caf50;border-radius:4px;padding:12px 16px;margin-bottom:12px;">
+      <strong style="color:#2e7d32;">✓ סידור מאוזן — 7 לוחמים כל יום!</strong>
+      <span style="font-size:0.85rem;">הקבוצות מתחלפות בצורה שתמיד יש קבוצה אחת בבסיס.</span>
+    </div>
+
+    <div style="font-size:0.82rem;color:#555;">
+      <strong>סיכום:</strong>
+      נהגים ≥3 ✓ · 7 לוחמים כל יום ✓ · קצין אחד מכל תפקיד כל יום ✓
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

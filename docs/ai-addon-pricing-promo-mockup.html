@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI add-on pricing — Concept B</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --text: #323338;
+      --muted: #676879;
+      --border: #e7e9ef;
+      --bg: #ffffff;
+      /* Page canvas — AI-Credits (Figma): https://www.figma.com/design/ErzdM0aHRUDyi4aJf4QPVd/AI-Credits */
+      --page-bg: #f4f7fb;
+      --green: #00c875;
+      --green-dark: #007f5c;
+      --blue: #0073ea;
+      --radius-lg: 16px;
+      --radius-md: 8px;
+      --space: 16px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Figtree, system-ui, sans-serif;
+      background: var(--page-bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px 20px;
+      padding: 12px 20px;
+      background: var(--text);
+      color: #fff;
+      font-size: 14px;
+    }
+    .toolbar label { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+    .toolbar input[type="number"] {
+      width: 64px;
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 1px solid #555;
+      background: #1a1d28;
+      color: #fff;
+      font: inherit;
+    }
+    .toolbar .hint { opacity: 0.75; font-size: 13px; }
+
+    .page {
+      /* Modal-ish width (closer to Figma “Add more AI credit” screenshot) */
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 20px 16px 40px;
+    }
+
+    /* Usage strip (AI trial) — from screenshot */
+    .usage-strip {
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      padding: 0;
+      margin: 0 0 14px;
+    }
+    .usage-strip-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px 16px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    .usage-strip-left {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 220px;
+    }
+    .usage-strip-title-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      line-height: 1.1;
+    }
+    .usage-strip-title {
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--text);
+    }
+    .badge-depleted {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 8px;
+      border-radius: 7px;
+      background: #ffe5ea;
+      color: #c2304a;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .usage-strip-sub {
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .usage-strip-right {
+      text-align: right;
+      min-width: 170px;
+    }
+    .usage-strip-right .usage-nums {
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+    .usage-strip-right .usage-nums span {
+      font-weight: 600;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0;
+      margin-left: 6px;
+    }
+    .usage-strip-bar {
+      height: 10px;
+      border-radius: 999px;
+      background: #f0f1f5;
+      overflow: hidden;
+      border: 1px solid #eef0f6;
+    }
+    /* New: outer frame around the bar (matches screenshot feel) */
+    .usage-strip-bar-frame {
+      padding: 6px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #fff;
+    }
+    .usage-strip-bar > span {
+      display: block;
+      height: 100%;
+      width: 100%;
+      background: #e2445c;
+    }
+    .usage-strip-note {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-top: 10px;
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+    .usage-strip-note svg {
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .usage-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 14px 0 20px;
+      border-radius: 999px;
+    }
+
+    .top-header {
+      padding: 0 0 18px;
+      text-align: center;
+    }
+    .top-title {
+      margin: 0 0 8px;
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+    .top-subtitle {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.4;
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    .block {
+      background: var(--bg);
+      border-radius: var(--radius-lg);
+      /* Tighter horizontal padding to match narrower modal */
+      padding: 22px 18px;
+      margin-bottom: 40px;
+      border: 1px solid var(--border);
+    }
+
+    .btn-primary {
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 12px 20px;
+      border: none;
+      border-radius: var(--radius-md);
+      background: var(--blue);
+      color: #fff;
+      cursor: pointer;
+      text-align: center;
+      width: 100%;
+    }
+
+    .btn-dark {
+      background: #1f1f21;
+      color: #fff;
+    }
+    .legal {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 8px;
+      max-width: 36ch;
+      line-height: 1.35;
+    }
+    .legal-outside {
+      margin-top: 10px;
+      max-width: 78ch;
+    }
+
+    /* (Removed) Add-on pack cards — management requested promo-only layout */
+
+    /* Corner ribbon — Promotions-stand style (mint, top-right) */
+    .promo-ribbon {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 112px;
+      height: 112px;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .promo-ribbon span {
+      position: absolute;
+      display: block;
+      width: 168px;
+      padding: 10px 0 8px;
+      background: #a8f0d4;
+      color: var(--text);
+      font-weight: 700;
+      font-size: 12px;
+      line-height: 1.2;
+      text-align: center;
+      right: -48px;
+      top: 22px;
+      transform: rotate(45deg);
+      letter-spacing: 0.02em;
+    }
+
+    /* Concept B: full-width horizontal promo — gradient frame */
+    .promo-horizontal {
+      border-radius: var(--radius-lg);
+      padding: 4px;
+      margin-bottom: 0;
+      background: linear-gradient(135deg, #6b6bff, #a78bfa, #f59e0b, #22d3d0);
+    }
+    .promo-horizontal-inner {
+      position: relative;
+      overflow: hidden;
+      background: var(--bg);
+      border-radius: calc(var(--radius-lg) - 3px);
+      padding: 22px 100px 22px 24px;
+      display: grid;
+      grid-template-columns: 1fr;
+      grid-template-rows: auto auto auto;
+      align-items: start;
+      gap: 24px 32px;
+    }
+    @media (max-width: 640px) {
+      .promo-horizontal-inner {
+        padding-right: 24px;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto;
+      }
+      .promo-horizontal-body {
+        grid-column: 1;
+        grid-row: 1;
+      }
+      .promo-credit-buckets-wrap {
+        grid-column: 1;
+        grid-row: 2;
+      }
+    }
+    .promo-horizontal-body {
+      grid-column: 1 / -1;
+      grid-row: 1;
+      min-width: 0;
+      padding-right: 8px;
+    }
+    .current-plan-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #f0f3ff;
+      border: 1px solid #d4dcfa;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 14px;
+    }
+    .current-plan-chip span {
+      font-weight: 600;
+      color: var(--muted);
+    }
+    .promo-hero-title {
+      margin: 0 0 12px;
+      font-size: 26px;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      max-width: 22ch;
+    }
+    .promo-hero-sub {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 400;
+      color: var(--muted);
+      line-height: 1.55;
+      max-width: 48ch;
+    }
+    .ai-credits-value {
+      margin: 40px 0 0;
+    }
+    .credit-features {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 8px;
+      flex: 1 1 240px;
+      min-width: 220px;
+    }
+    .credit-features li {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+    .credit-features li strong {
+      color: var(--text);
+      font-weight: 700;
+    }
+    .check {
+      color: var(--green);
+      font-weight: 900;
+      flex-shrink: 0;
+      transform: translateY(1px);
+    }
+    .promo-horizontal .legal {
+      margin-top: 14px;
+      max-width: 58ch;
+    }
+    .promo-credit-buckets-wrap {
+      border-top: 1px solid var(--border);
+      padding-top: 14px;
+      margin-top: 14px;
+    }
+    /* New: CTA sits lower (bottom of card) */
+    .promo-cta {
+      grid-column: 1 / -1;
+      grid-row: 3;
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-end;
+      margin-top: 4px;
+      /* CTA should visually align closer to the right edge (less affected by ribbon padding) */
+      margin-right: -24px;
+    }
+    .promo-cta .btn-primary {
+      width: auto;
+      padding: 10px 20px;
+      white-space: nowrap;
+    }
+    /* Collapsed: one row trigger. Open: card grows + panel shows all tiers */
+    .credit-buckets-trigger {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      width: 100%;
+      padding: 12px 14px;
+      border: 2px solid var(--blue);
+      border-radius: var(--radius-md);
+      background: var(--bg);
+      font: inherit;
+      color: var(--text);
+      cursor: pointer;
+      text-align: left;
+    }
+    .credit-buckets-trigger:hover {
+      background: #fafbff;
+    }
+    .credit-buckets-trigger .credit-buckets-trigger-main {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px 16px;
+      flex: 1;
+      min-width: 0;
+    }
+    .credit-buckets-trigger .credit-bucket-label {
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .credit-buckets-trigger .credit-bucket-prices {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      flex-shrink: 0;
+      font-family: Poppins, sans-serif;
+    }
+    .credit-buckets-trigger .credit-bucket-prices .strike {
+      text-decoration: line-through;
+      text-decoration-thickness: 1.5px;
+      text-decoration-color: #b4b6c0;
+      color: var(--muted);
+      font-weight: 500;
+      font-size: 14px;
+    }
+    .credit-buckets-chevron {
+      flex-shrink: 0;
+      width: 10px;
+      height: 10px;
+      margin-top: 4px;
+      border-right: 2px solid var(--text);
+      border-bottom: 2px solid var(--text);
+      transform: rotate(45deg) translateY(-2px);
+      transition: transform 0.2s ease;
+    }
+    .promo-credit-buckets-wrap.is-open .credit-buckets-chevron {
+      transform: rotate(-135deg) translateY(2px);
+    }
+    .credit-buckets-panel {
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      padding-top: 0;
+      border-top: 0 solid transparent;
+      transition: max-height 0.45s ease, opacity 0.28s ease, padding 0.28s ease;
+    }
+    .promo-credit-buckets-wrap.is-open .credit-buckets-panel {
+      max-height: 520px;
+      opacity: 1;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      margin-top: 12px;
+    }
+    /* All bundled credit tiers in expanded panel (list prices struck; net highlighted) */
+    .credit-buckets {
+      width: 100%;
+    }
+    .credit-buckets-heading {
+      margin: 0 0 12px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .credit-buckets-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .credit-buckets-list li {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .credit-bucket-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--bg);
+      font: inherit;
+      font-size: 14px;
+      text-align: left;
+      cursor: pointer;
+      color: var(--text);
+    }
+    .credit-bucket-row:hover {
+      background: #f8f9fc;
+    }
+    .credit-bucket-row[aria-selected="true"] {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 1px var(--blue);
+      background: #f4f8ff;
+    }
+    .credit-bucket-label {
+      font-weight: 600;
+      flex: 1;
+      min-width: 0;
+      line-height: 1.35;
+    }
+    .credit-bucket-prices {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      flex-shrink: 0;
+      font-family: Poppins, sans-serif;
+    }
+    .credit-bucket-prices .strike {
+      text-decoration: line-through;
+      text-decoration-thickness: 1.5px;
+      text-decoration-color: #b4b6c0;
+      color: var(--muted);
+      font-weight: 500;
+      font-size: 14px;
+    }
+    .credit-net {
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--text);
+    }
+    .credit-net-zero {
+      font-size: 19px;
+      font-weight: 800;
+      color: var(--green);
+      letter-spacing: -0.02em;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <label>
+      Discount ($ / month)
+      <input type="number" id="discount" value="30" min="0" max="999" />
+    </label>
+    <span class="hint">Discount applies only to the AI Work Platform promo (ribbon + bundled credits expander under the card)—not the add-on credit packs below.</span>
+  </div>
+
+  <div class="page">
+    <div class="block" id="concept-b"></div>
+  </div>
+
+  <script>
+    const discountInput = document.getElementById("discount");
+
+    const BUNDLED_CREDIT_ROWS = [
+      { label: "3,000 AI credits / month", list: 30, perks: { tasks: 800, workflows: 4000, items: 400 } },
+      { label: "4,000 AI credits / month", list: 40, perks: { tasks: 1600, workflows: 8000, items: 800 } },
+      { label: "8,000 AI credits / month", list: 80, perks: { tasks: 4000, workflows: 16000, items: 2000 } },
+      { label: "20,000 AI credits / month", list: 170, perks: { tasks: 8000, workflows: 32000, items: 4000 } }
+    ];
+    var selectedBundledListUsd = 30;
+    var creditBucketsOpen = false;
+
+    function getBundledRowByList(list) {
+      for (var i = 0; i < BUNDLED_CREDIT_ROWS.length; i++) {
+        if (BUNDLED_CREDIT_ROWS[i].list === list) return BUNDLED_CREDIT_ROWS[i];
+      }
+      return BUNDLED_CREDIT_ROWS[0];
+    }
+
+    function normalizeSelectedBundledList() {
+      var ok = false;
+      for (var j = 0; j < BUNDLED_CREDIT_ROWS.length; j++) {
+        if (BUNDLED_CREDIT_ROWS[j].list === selectedBundledListUsd) {
+          ok = true;
+          break;
+        }
+      }
+      if (!ok) selectedBundledListUsd = BUNDLED_CREDIT_ROWS[0].list;
+    }
+
+    function netPriceSpan(listUsd, discount) {
+      const net = Math.max(0, listUsd - Math.max(0, discount));
+      const cls = net === 0 ? "credit-net credit-net-zero" : "credit-net";
+      return '<span class="' + cls + '">$' + net + "</span>";
+    }
+
+    function aiCreditsValueHtml() {
+      normalizeSelectedBundledList();
+      const selected = getBundledRowByList(selectedBundledListUsd);
+      const perks = selected.perks || { tasks: 0, workflows: 0, items: 0 };
+      return (
+        '<div class="ai-credits-value" aria-label="AI credits value">' +
+        '<ul class="credit-features" aria-label="Included usage limits">' +
+        '<li><span class="check">✓</span>Up to <strong>' +
+        perks.tasks.toLocaleString() +
+        "</strong> AI agent tasks</li>" +
+        '<li><span class="check">✓</span>Up to <strong>' +
+        perks.workflows.toLocaleString() +
+        "</strong> AI Workflows</li>" +
+        '<li><span class="check">✓</span>Up to <strong>' +
+        perks.items.toLocaleString() +
+        "</strong> AI item generations</li>" +
+        '<li><span class="check">✓</span><strong>Vibe app builder</strong> (includes 3 Vibe apps)</li>' +
+        "</ul>" +
+        "</div>"
+      );
+    }
+
+    function creditBucketsAccordionHtml(discount) {
+      normalizeSelectedBundledList();
+      const d = Math.max(0, discount);
+      const selected = getBundledRowByList(selectedBundledListUsd);
+      selectedBundledListUsd = selected.list;
+
+      const openCls = creditBucketsOpen ? " is-open" : "";
+      const triggerPrices =
+        '<span class="credit-bucket-prices" data-bucket-trigger-prices>' +
+        '<span class="strike">($' +
+        selected.list +
+        ")</span>" +
+        netPriceSpan(selected.list, d) +
+        "</span>";
+
+      let lis = "";
+      BUNDLED_CREDIT_ROWS.forEach(function (row) {
+        const isSel = row.list === selectedBundledListUsd;
+        lis +=
+          '<li role="none">' +
+          '<button type="button" class="credit-bucket-row" role="option" data-credit-bucket data-list="' +
+          row.list +
+          '" aria-selected="' +
+          (isSel ? "true" : "false") +
+          '">' +
+          '<span class="credit-bucket-label">' +
+          row.label +
+          "</span>" +
+          '<span class="credit-bucket-prices">' +
+          '<span class="strike">($' +
+          row.list +
+          ")</span>" +
+          netPriceSpan(row.list, d) +
+          "</span></button></li>";
+      });
+
+      return (
+        '<div class="promo-credit-buckets-wrap' +
+        openCls +
+        '" data-credit-accordion>' +
+        '<button type="button" class="credit-buckets-trigger" data-credit-accordion-toggle ' +
+        'id="promo-bundled-trigger" aria-expanded="' +
+        (creditBucketsOpen ? "true" : "false") +
+        '" aria-controls="promo-bundled-panel">' +
+        '<span class="credit-buckets-trigger-main">' +
+        '<span class="credit-bucket-label" data-bucket-trigger-label>' +
+        selected.label +
+        "</span>" +
+        triggerPrices +
+        "</span>" +
+        '<span class="credit-buckets-chevron" aria-hidden="true"></span></button>' +
+        '<div class="credit-buckets-panel" id="promo-bundled-panel" role="region" ' +
+        'aria-labelledby="promo-bundled-trigger" ' +
+        (creditBucketsOpen ? "" : 'aria-hidden="true" ') +
+        ">" +
+        '<div class="credit-buckets" data-credit-buckets>' +
+        '<p class="credit-buckets-heading">Bundled AI credits on AI Work Platform</p>' +
+        '<ul class="credit-buckets-list" role="listbox">' +
+        lis +
+        "</ul></div></div></div>"
+      );
+    }
+
+    function promoLegalHtml(discount) {
+      const d = Math.max(0, discount);
+      return (
+        '<p class="legal legal-outside">Limited-time: $' +
+        d +
+        "/month off AI Platform for 12 billing cycles when upgrading from standalone AI credit add-ons. Eligibility, tiers, and tax may vary.</p>"
+      );
+    }
+
+    function promoHorizontalHtml(x) {
+      return `
+        <div class="promo-horizontal">
+          <div class="promo-horizontal-inner">
+            <div class="promo-ribbon" aria-hidden="true"><span>$${x}/mo<br>off</span></div>
+            <div class="promo-horizontal-body">
+              <div class="current-plan-chip"><span>Current plan</span> <strong>Pro</strong></div>
+              <p class="promo-hero-title">The AI Work Platform is here</p>
+              <p class="promo-hero-sub">Designed from the ground up for human-agent collaboration. Powered by AI at every step of the way.</p>
+              ${creditBucketsAccordionHtml(x)}
+              ${aiCreditsValueHtml()}
+            </div>
+            <div class="promo-cta">
+              <button type="button" class="btn-primary btn-dark">Purchase</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function usageStripHtml() {
+      return (
+        '<div class="usage-strip" aria-label="AI trial credits usage">' +
+        '<div class="usage-strip-top">' +
+        '<div class="usage-strip-left">' +
+        '<div class="usage-strip-title-row">' +
+        '<div class="usage-strip-title">AI trial</div>' +
+        '<div class="badge-depleted">Depleted</div>' +
+        '</div>' +
+        '<div class="usage-strip-sub">One-time trial credits</div>' +
+        '</div>' +
+        '<div class="usage-strip-right">' +
+        '<div class="usage-nums">11,500/6,000 <span>credits used</span></div>' +
+        '</div>' +
+        '</div>' +
+        '<div class="usage-strip-bar-frame" aria-hidden="true">' +
+          '<div class="usage-strip-bar" role="progressbar" aria-valuemin="0" aria-valuemax="6000" aria-valuenow="6000">' +
+            '<span></span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="usage-strip-note">' +
+        '<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">' +
+        '<path d="M12 3l10 18H2L12 3z" fill="none" stroke="#676879" stroke-width="2" />' +
+        '<path d="M12 9v5" stroke="#676879" stroke-width="2" stroke-linecap="round" />' +
+        '<path d="M12 17h.01" stroke="#676879" stroke-width="3" stroke-linecap="round" />' +
+        '</svg>' +
+        '<div>You reached the credit limit on your AI trial, purchase more credits to keep the AI actions running</div>' +
+        '</div>' +
+        '</div>'
+      );
+    }
+
+    function titleHeaderHtml() {
+      return (
+        '<div class="top-header">' +
+        '<h1 class="top-title">Buy once, use everywhere</h1>' +
+        '<p class="top-subtitle">AI credits fuel execution across every team</p>' +
+        '</div>'
+      );
+    }
+
+    function render() {
+      const x = Math.max(0, parseInt(discountInput.value, 10) || 0);
+      discountInput.value = String(x);
+
+      document.getElementById("concept-b").innerHTML =
+        titleHeaderHtml() +
+        usageStripHtml() +
+        '<div class="usage-divider" aria-hidden="true"></div>' +
+        promoHorizontalHtml(x) +
+        promoLegalHtml(x);
+    }
+
+    (function initCreditBucketsUi() {
+      if (window.__creditBucketsUiInit) return;
+      window.__creditBucketsUiInit = true;
+      document.addEventListener("click", function (e) {
+        if (e.target.closest("[data-credit-accordion-toggle]")) {
+          e.preventDefault();
+          creditBucketsOpen = !creditBucketsOpen;
+          render();
+          return;
+        }
+        const row = e.target.closest("[data-credit-bucket]");
+        if (!row) return;
+        e.preventDefault();
+        var list = parseInt(row.getAttribute("data-list"), 10) || 0;
+        if (getBundledRowByList(list).list !== list) return;
+        selectedBundledListUsd = list;
+        render();
+      });
+    })();
+
+    discountInput.addEventListener("input", render);
+    render();
+  </script>
+</body>
+</html>

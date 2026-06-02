@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Agents email funnel — visualization</title>
+  <style>
+    :root {
+      --primary: #6161ff;
+      --primary-light: #ebebff;
+      --bg: #0f111a;
+      --card: #16182a;
+      --text: #f4f4f7;
+      --muted: #9ca3af;
+      --border: #2a2d42;
+      --green: #00ca72;
+      --amber: #f5a623;
+      --coral: #ff7575;
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 28px 20px 48px;
+      line-height: 1.45;
+    }
+    .wrap {
+      max-width: 920px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 0 0 6px;
+    }
+    .sub {
+      font-size: 14px;
+      color: var(--muted);
+      margin: 0;
+    }
+    .sub a { color: var(--primary); }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.28);
+    }
+    h2 {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin: 0 0 14px;
+      font-weight: 600;
+    }
+    .inputs {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 12px 16px;
+      margin-bottom: 20px;
+    }
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    input[type="number"] {
+      background: #0a0c14;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 10px 12px;
+      font-size: 15px;
+      width: 100%;
+    }
+    input[type="number"]:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 10px;
+    }
+    .row:last-child { margin-bottom: 0; }
+    .label {
+      width: 180px;
+      flex-shrink: 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .bar-wrap {
+      flex: 1;
+      height: 36px;
+      background: #0a0c14;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .bar {
+      height: 100%;
+      border-radius: 0 6px 6px 0;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      min-width: 0;
+      transition: width 0.25s ease;
+    }
+    .bar.send { background: linear-gradient(90deg, #4a4a8f, var(--primary)); }
+    .bar.delivery { background: linear-gradient(90deg, #2d5a7a, #3d8fd9); }
+    .bar.engage { background: linear-gradient(90deg, #3d6b4a, var(--green)); }
+    .bar.click { background: linear-gradient(90deg, #7a5a2d, var(--amber)); }
+    .val {
+      width: 56px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .rates {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+    .rate {
+      background: #0a0c14;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+    .rate .k {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 4px;
+    }
+    .rate .v {
+      font-size: 20px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+    .rate .f {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .warn {
+      font-size: 12px;
+      color: var(--coral);
+      margin-top: 8px;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    button {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button.secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    button:hover { opacity: 0.92; }
+    .flow {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .flow .box {
+      background: #0a0c14;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: var(--text);
+    }
+    .flow .arrow { color: var(--primary); font-weight: 700; }
+    pre.sql {
+      font-size: 11px;
+      color: var(--muted);
+      background: #0a0c14;
+      border-radius: 8px;
+      padding: 14px;
+      overflow-x: auto;
+      margin: 12px 0 0;
+      border: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>AI Agents email funnel</h1>
+      <p class="sub">
+        Paste counts from Redash query
+        <a href="https://redash.bigbrain.me/queries/142579/source" target="_blank" rel="noopener">142579</a>
+        (section A — overall). Bars scale to <strong>Sent</strong>. Repo SQL:
+        <code style="color:var(--text)">Knowledge/Tasks/sql-ai-agents-email-funnel-braze.sql</code>
+      </p>
+    </header>
+
+    <section class="card">
+      <h2>Unique users (paste from query)</h2>
+      <div class="inputs">
+        <label>users_sent <input type="number" id="sent" min="0" step="1" value="0" /></label>
+        <label>users_delivered <input type="number" id="delivered" min="0" step="1" value="0" /></label>
+        <label>users_engaged_open_or_click <input type="number" id="engaged" min="0" step="1" value="0" /></label>
+        <label>users_clicked <input type="number" id="clicked" min="0" step="1" value="0" /></label>
+      </div>
+      <div class="actions">
+        <button type="button" id="example">Example shape</button>
+        <button type="button" class="secondary" id="clear">Clear</button>
+      </div>
+      <p class="warn" id="logicWarn" hidden></p>
+    </section>
+
+    <section class="card">
+      <h2>Funnel (width = % of sent)</h2>
+      <div id="funnel"></div>
+      <div class="rates" id="rates"></div>
+    </section>
+
+    <section class="card">
+      <h2>Query flow</h2>
+      <div class="flow">
+        <span class="box">bigbrain.L2.BRAZE_MARKETING_EVENTS</span>
+        <span class="arrow">→</span>
+        <span class="box">Filters + admin campaigns only</span>
+        <span class="arrow">→</span>
+        <span class="box">braze_events CTE</span>
+        <span class="arrow">→</span>
+        <span class="box">COUNT DISTINCT by kind</span>
+        <span class="arrow">→</span>
+        <span class="box">Rates</span>
+      </div>
+      <pre class="sql">kind = send → users_sent
+kind = delivery → users_delivered
+kind IN (open, click) → users_engaged_open_or_click
+kind = click → users_clicked</pre>
+    </section>
+  </div>
+
+    const $ = (id) => document.getElementById(id);
+
+    function pct(num, den) {
+      if (!den || den <= 0) return null;
+      return (100 * num) / den;
+    }
+
+    function fmtFrac(x) {
+      if (x == null || Number.isNaN(x)) return '—';
+      return (100 * x).toFixed(2) + '%';
+    }
+
+    function validate(sent, del, eng, clk) {
+      const msgs = [];
+      if (del > sent) msgs.push('Delivered > sent — check date window or event definitions.');
+      if (eng > del) msgs.push('Engaged > delivered — possible if delivery rows are missing; use fallback rate in SQL.');
+      if (clk > eng) msgs.push('Clicked > engaged — impossible; fix inputs.');
+      if (clk > del) msgs.push('Clicked > delivered — impossible; fix inputs.');
+      $('logicWarn').hidden = msgs.length === 0;
+      $('logicWarn').textContent = msgs.join(' ');
+    }
+
+    function render() {
+      const sent = Math.max(0, parseInt($('sent').value, 10) || 0);
+      const del = Math.max(0, parseInt($('delivered').value, 10) || 0);
+      const eng = Math.max(0, parseInt($('engaged').value, 10) || 0);
+      const clk = Math.max(0, parseInt($('clicked').value, 10) || 0);
+
+      validate(sent, del, eng, clk);
+
+      const base = Math.max(sent, 1);
+      const w = (n) => Math.min(100, (100 * n) / base) + '%';
+
+      $('funnel').innerHTML = `
+        <div class="row">
+          <span class="label">Sent</span>
+          <div class="bar-wrap"><div class="bar send" style="width:${w(sent)}">${sent ? sent : ''}</div></div>
+          <span class="val">${sent}</span>
+        </div>
+        <div class="row">
+          <span class="label">Delivered</span>
+          <div class="bar-wrap"><div class="bar delivery" style="width:${w(del)}">${del ? del : ''}</div></div>
+          <span class="val">${del}</span>
+        </div>
+        <div class="row">
+          <span class="label">Open or click</span>
+          <div class="bar-wrap"><div class="bar engage" style="width:${w(eng)}">${eng ? eng : ''}</div></div>
+          <span class="val">${eng}</span>
+        </div>
+        <div class="row">
+          <span class="label">Clicked</span>
+          <div class="bar-wrap"><div class="bar click" style="width:${w(clk)}">${clk ? clk : ''}</div></div>
+          <span class="val">${clk}</span>
+        </div>
+      `;
+
+      const eDel = del > 0 ? eng / del : null;
+      const eSent = sent > 0 ? eng / sent : null;
+      const ctr = del > 0 ? clk / del : null;
+      const ctor = eng > 0 ? clk / eng : null;
+      const delVsSent = sent > 0 ? del / sent : null;
+
+      $('rates').innerHTML = `
+        <div class="rate">
+          <div class="k">Engagement vs delivered</div>
+          <div class="v">${fmtFrac(eDel)}</div>
+          <div class="f">open or click ÷ delivered</div>
+        </div>
+        <div class="rate">
+          <div class="k">Engagement vs sent</div>
+          <div class="v">${fmtFrac(eSent)}</div>
+          <div class="f">open or click ÷ sent</div>
+        </div>
+        <div class="rate">
+          <div class="k">CTR vs delivered</div>
+          <div class="v">${fmtFrac(ctr)}</div>
+          <div class="f">click ÷ delivered</div>
+        </div>
+        <div class="rate">
+          <div class="k">CTOR</div>
+          <div class="v">${fmtFrac(ctor)}</div>
+          <div class="f">click ÷ open-or-click</div>
+        </div>
+        <div class="rate">
+          <div class="k">Delivered vs sent</div>
+          <div class="v">${fmtFrac(delVsSent)}</div>
+          <div class="f">sanity: inbox reach</div>
+        </div>
+        <div class="rate">
+          <div class="k">Click share of sent</div>
+          <div class="v">${fmtFrac(sent > 0 ? clk / sent : null)}</div>
+          <div class="f">click ÷ sent</div>
+        </div>
+      `;
+    }
+
+    ['sent', 'delivered', 'engaged', 'clicked'].forEach((id) => {
+      $(id).addEventListener('input', render);
+    });
+
+    $('example').addEventListener('click', () => {
+      $('sent').value = 10000;
+      $('delivered').value = 9800;
+      $('engaged').value = 2400;
+      $('clicked').value = 420;
+      render();
+    });
+
+    $('clear').addEventListener('click', () => {
+      $('sent').value = 0;
+      $('delivered').value = 0;
+      $('engaged').value = 0;
+      $('clicked').value = 0;
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>

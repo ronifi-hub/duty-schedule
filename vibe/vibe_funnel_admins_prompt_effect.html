@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How prompt count affects publish click — Admins</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0 0 0.5rem;
+      color: #f8fafc;
+    }
+    .subtitle {
+      font-size: 0.875rem;
+      color: #94a3b8;
+      margin-bottom: 2rem;
+    }
+    .charts {
+      display: grid;
+      gap: 2rem;
+      max-width: 900px;
+    }
+    .chart-card {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
+    }
+    .chart-card h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 0 0 1rem;
+      color: #cbd5e1;
+    }
+    .chart-container {
+      position: relative;
+      height: 280px;
+    }
+    .chart-container.tall { height: 320px; }
+    .takeaway {
+      background: #334155;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      font-size: 0.875rem;
+      color: #cbd5e1;
+      margin-top: 1.5rem;
+      border-left: 4px solid #3b82f6;
+    }
+    .takeaway strong { color: #f8fafc; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+      margin-top: 0.5rem;
+    }
+    th, td {
+      padding: 0.5rem 0.75rem;
+      text-align: right;
+      border-bottom: 1px solid #334155;
+    }
+    th { color: #94a3b8; font-weight: 500; }
+    th:first-child, td:first-child { text-align: left; }
+    td:first-child { font-weight: 500; color: #cbd5e1; }
+    .pct { color: #34d399; }
+    .section-divider {
+      margin: 2.5rem 0 1rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #334155;
+    }
+    .section-divider h1 { font-size: 1.2rem; margin-bottom: 0.5rem; }
+
+    @media print {
+      body { background: #0f172a; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .chart-card { break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .takeaway { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .section-divider { break-before: auto; }
+    }
+  </style>
+</head>
+<body>
+  <h1>How different prompt count affects publish click</h1>
+  <p class="subtitle">Admins only. <strong>All buckets:</strong> admins who saw preview at least once. <strong>Last 30 days.</strong> Source: BigBrain.</p>
+  <p class="subtitle" style="margin-top: -1rem;"><strong>Unique admins:</strong> each admin is in exactly one segment (by number of prompts before first publish). No overlap between buckets.</p>
+
+  <div class="charts">
+    <div class="section-divider" style="margin-top: 0;">
+      <h1>Activation & aha moment by prompt segment</h1>
+      <p class="subtitle" style="margin-bottom: 1rem;">Segments 1–9+ (prompts before first publish). <strong>Aha moment:</strong> Publish click %. Last 30 days, admins who saw preview.</p>
+    </div>
+    <div class="chart-card">
+      <h2>Proxy activation vs aha moment by segment</h2>
+      <p class="subtitle" style="margin: -0.5rem 0 1rem; font-size: 0.8125rem;">Main view: proxy success and aha probability across prompt segments.</p>
+      <div class="chart-container tall">
+        <canvas id="proxyAhaChart"></canvas>
+      </div>
+      <div class="legend-inline" style="margin-top: 0.75rem;">
+        <span><span class="dot" style="background:#10b981"></span> Publish clicked (aha)</span>
+      </div>
+      <p class="takeaway"><strong>Peak aha probability</strong> at 7 prompts (63%) and 9+ (62.4%). Proxy metrics near 100%; aha rises with prompts then plateaus.</p>
+    </div>
+    <div class="chart-card">
+      <h2>Aha moment probability: Publish click % by segment</h2>
+      <div class="chart-container tall">
+        <canvas id="ahaChart"></canvas>
+      </div>
+    </div>
+
+    <div class="section-divider">
+      <h1>4-bucket view</h1>
+      <p class="subtitle" style="margin-bottom: 1rem;">Prompt buckets: 1, 2, 3, 4+.</p>
+    </div>
+    <div class="chart-card">
+      <h2>Publish click rate by number of prompts before publish</h2>
+      <div class="chart-container">
+        <canvas id="publishRateChart"></canvas>
+      </div>
+      <p class="takeaway"><strong>More prompts before first publish → higher publish click rate.</strong> 1 prompt: 40.2% → 4+ prompts: 58.9%. Peak at 4+ prompts (58.9%).</p>
+    </div>
+
+    <div class="chart-card">
+      <h2>Users and publish clicks by prompt bucket</h2>
+      <div class="chart-container">
+        <canvas id="volumeChart"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h2>Summary table</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Prompts before publish</th>
+            <th>Admins (saw preview)</th>
+            <th>Publish clicked</th>
+            <th>Publish rate</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>6,571</td><td>2,641</td><td class="pct">40.2%</td></tr>
+          <tr><td>2</td><td>1,996</td><td>937</td><td class="pct">46.9%</td></tr>
+          <tr><td>3</td><td>931</td><td>499</td><td class="pct">53.6%</td></tr>
+          <tr><td>4+</td><td>2,234</td><td>1,315</td><td class="pct">58.9%</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size: 0.75rem; color: #64748b; margin-top: 0.75rem;">Validation: 6,571 + 1,996 + 931 + 2,234 = <strong>11,734</strong> unique admins (each in exactly one bucket).</p>
+    </div>
+
+    <div class="section-divider">
+      <h1>Combined view: 2+3 prompts</h1>
+      <p class="subtitle" style="margin-bottom: 1rem;">Same data with 2 and 3 prompts merged into one bucket.</p>
+    </div>
+    <div class="chart-card">
+      <h2>Publish click rate (1 vs 2+3 vs 4+ prompts)</h2>
+      <div class="chart-container">
+        <canvas id="combinedRateChart"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <h2>Users and publish clicks (combined view)</h2>
+      <div class="chart-container">
+        <canvas id="combinedVolumeChart"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <h2>Summary table (combined)</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Prompts before publish</th>
+            <th>Admins (saw preview)</th>
+            <th>Publish clicked</th>
+            <th>Publish rate</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>6,571</td><td>2,641</td><td class="pct">40.2%</td></tr>
+          <tr><td>2+3</td><td>2,927</td><td>1,436</td><td class="pct">49.1%</td></tr>
+          <tr><td>4+</td><td>2,234</td><td>1,315</td><td class="pct">58.9%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const buckets = ['1 prompt', '2 prompts', '3 prompts', '4+ prompts'];
+    const publishRates = [40.2, 46.9, 53.6, 58.9];
+    const users = [6571, 1996, 931, 2234];
+    const publishClicks = [2641, 937, 499, 1315];
+    const barColors = ['#3b82f6', '#8b5cf6', '#06b6d4', '#10b981'];
+
+    // Combined 2+3 view (30 days)
+    const bucketsCombined = ['1 prompt', '2+3 prompts', '4+ prompts'];
+    const usersCombined = [6571, 1996 + 931, 2234];
+    const publishClicksCombined = [2641, 937 + 499, 1315];
+    const publishRatesCombined = [40.2, 49.1, 58.9];
+    const barColorsCombined = ['#3b82f6', '#8b5cf6', '#10b981'];
+
+    // Finer segments: 1–9+ (activation & aha)
+    const segmentsFine = ['1', '2', '3', '4', '5', '6', '7', '8', '9+'];
+    const usersFine = [6572, 1996, 932, 516, 342, 220, 189, 125, 842];
+    const pctBuildFine = [99.8, 99.7, 99.9, 100, 100, 100, 100, 100, 99.9];
+    const pctPreviewFine = [100, 100, 100, 100, 100, 100, 100, 100, 100];
+    const pctPublishFine = [40.2, 46.9, 53.5, 55.6, 53.8, 57.3, 63, 59.2, 62.4];
+
+    // Publish rate (%) by prompt bucket
+    new Chart(document.getElementById('publishRateChart'), {
+      type: 'bar',
+      data: {
+        labels: buckets,
+        datasets: [{
+          label: 'Publish click rate (%)',
+          data: publishRates,
+          backgroundColor: barColors,
+          borderColor: barColors.map(c => c),
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: (ctx) => ctx.parsed.y + '%' } }
+        },
+        scales: {
+          y: {
+            min: 0,
+            max: 70,
+            grid: { color: 'rgba(148,163,184,0.15)' },
+            ticks: { color: '#94a3b8', callback: (v) => v + '%' }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { color: '#94a3b8' }
+          }
+        }
+      }
+    });
+
+    // Stacked or grouped: users vs publish clicks
+    new Chart(document.getElementById('volumeChart'), {
+      type: 'bar',
+      data: {
+        labels: buckets,
+        datasets: [
+          {
+            label: 'Admins (saw preview)',
+            data: users,
+            backgroundColor: 'rgba(59, 130, 246, 0.6)',
+            borderColor: '#3b82f6',
+            borderWidth: 1
+          },
+          {
+            label: 'Publish clicked',
+            data: publishClicks,
+            backgroundColor: 'rgba(16, 185, 129, 0.8)',
+            borderColor: '#10b981',
+            borderWidth: 1
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'top' } },
+        scales: {
+          y: {
+            grid: { color: 'rgba(148,163,184,0.15)' },
+            ticks: { color: '#94a3b8' }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { color: '#94a3b8' }
+          }
+        }
+      }
+    });
+
+    // Combined view: Publish rate (1 vs 2+3 vs 4+)
+    new Chart(document.getElementById('combinedRateChart'), {
+      type: 'bar',
+      data: {
+        labels: bucketsCombined,
+        datasets: [{
+          label: 'Publish click rate (%)',
+          data: publishRatesCombined,
+          backgroundColor: barColorsCombined,
+          borderColor: barColorsCombined,
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: (ctx) => ctx.parsed.y + '%' } }
+        },
+        scales: {
+          y: {
+            min: 0,
+            max: 70,
+            grid: { color: 'rgba(148,163,184,0.15)' },
+            ticks: { color: '#94a3b8', callback: (v) => v + '%' }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { color: '#94a3b8' }
+          }
+        }
+      }
+    });
+
+    // Combined view: Users vs publish clicks
+    new Chart(document.getElementById('combinedVolumeChart'), {
+      type: 'bar',
+      data: {
+        labels: bucketsCombined,
+        datasets: [
+          {
+            label: 'Admins (saw preview)',
+            data: usersCombined,
+            backgroundColor: 'rgba(59, 130, 246, 0.6)',
+            borderColor: '#3b82f6',
+            borderWidth: 1
+          },
+          {
+            label: 'Publish clicked',
+            data: publishClicksCombined,
+            backgroundColor: 'rgba(16, 185, 129, 0.8)',
+            borderColor: '#10b981',
+            borderWidth: 1
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'top' } },
+        scales: {
+          y: {
+            grid: { color: 'rgba(148,163,184,0.15)' },
+            ticks: { color: '#94a3b8' }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { color: '#94a3b8' }
+          }
+        }
+      }
+    });
+
+    // Aha moment: Publish % by fine segment
+    new Chart(document.getElementById('ahaChart'), {
+      type: 'bar',
+      data: {
+        labels: segmentsFine,
+        datasets: [{
+          label: 'Publish click % (aha moment)',
+          data: pctPublishFine,
+          backgroundColor: segmentsFine.map((_, i) => ['#3b82f6','#8b5cf6','#06b6d4','#10b981','#f59e0b','#ec4899','#14b8a6','#a855f7','#6366f1'][i]),
+          borderColor: segmentsFine.map((_, i) => ['#60a5fa','#a78bfa','#22d3ee','#34d399','#fbbf24','#f472b6','#2dd4bf','#c084fc','#818cf8'][i]),
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: (ctx) => ctx.parsed.y + '%' } }
+        },
+        scales: {
+          y: {
+            min: 0,
+            max: 70,
+            grid: { color: 'rgba(148,163,184,0.15)' },
+            ticks: { color: '#94a3b8', callback: (v) => v + '%' }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { color: '#94a3b8', maxRotation: 0 }
+          }
+        }
+      }
+    });
+
+    // Proxy activation vs aha (line chart) — main view for different segments of prompt (aha only)
+    new Chart(document.getElementById('proxyAhaChart'), {
+      type: 'line',
+      data: {
+        labels: segmentsFine,
+        datasets: [
+          { label: 'Publish % (aha)', data: pctPublishFine, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.15)', fill: true, tension: 0.2, borderWidth: 2.5, pointRadius: 4 }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'top' },
+          tooltip: { callbacks: { label: (ctx) => ctx.dataset.label + ': ' + ctx.parsed.y + '%' } }
+        },
+        scales: {
+          y: {
+            min: 0,
+            max: 105,
+            grid: { color: 'rgba(148,163,184,0.15)' },
+            ticks: { color: '#94a3b8', callback: (v) => v + '%' }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { color: '#94a3b8', maxRotation: 0 }
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

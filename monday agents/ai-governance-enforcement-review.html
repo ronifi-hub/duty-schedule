@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Enforcement for Agents — Meeting Prep</title>
+  <style>
+    :root { --bg: #1a1a2e; --surface: #24243e; --card: #2d2d4a; --text: #e4e4e7; --muted: #9ca3af; --accent: #38bdf8; --yellow: #fbbf24; --red: #f87171; --green: #4ade80; --border: #3f3f5c; }
+    * { box-sizing: border-box; margin: 0; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.65; padding: 2rem; max-width: 820px; margin: 0 auto; }
+    h1 { font-size: 1.5rem; margin: 2rem 0 0.4rem; border-bottom: 1px solid var(--border); padding-bottom: 0.4rem; }
+    h1:first-child { margin-top: 0; }
+    h2 { font-size: 1.1rem; color: var(--accent); margin: 1.5rem 0 0.4rem; }
+    p { margin: 0.4rem 0; }
+    ul, ol { padding-left: 1.25rem; margin: 0.3rem 0; }
+    li { margin: 0.25rem 0; }
+    strong { color: #fff; }
+    hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+    .meta { font-size: 0.85rem; color: var(--muted); margin-bottom: 1.5rem; }
+    .topic { background: var(--surface); border-radius: 8px; padding: 1.25rem; margin: 1rem 0; }
+    .topic-soft { border-left: 4px solid var(--yellow); }
+    .topic-hard { border-left: 4px solid var(--red); }
+    .topic-general { border-left: 4px solid var(--accent); }
+    .topic-title { font-weight: 700; font-size: 1.05rem; margin-bottom: 0.4rem; }
+    .topic-context { color: var(--muted); font-size: 0.9rem; margin-bottom: 0.6rem; }
+    .options { background: var(--card); border-radius: 6px; padding: 0.75rem 1rem; margin-top: 0.5rem; font-size: 0.9rem; }
+    .options li { margin: 0.3rem 0; }
+    .question { color: var(--yellow); font-weight: 600; }
+    .risk { color: var(--red); font-size: 0.85rem; margin-top: 0.3rem; }
+    .toc { background: var(--surface); padding: 1rem; border-radius: 8px; margin: 1rem 0 2rem; }
+    .toc a { color: var(--accent); text-decoration: none; }
+    .toc a:hover { text-decoration: underline; }
+    .toc ul { list-style: none; padding-left: 0; }
+    .toc li { margin: 0.3rem 0; }
+    .tag { display: inline-block; padding: 0.1rem 0.45rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+    .tag-soft { background: rgba(251,191,36,0.15); color: var(--yellow); border: 1px solid var(--yellow); }
+    .tag-hard { background: rgba(248,113,113,0.15); color: var(--red); border: 1px solid var(--red); }
+    .tag-general { background: rgba(56,189,248,0.12); color: var(--accent); border: 1px solid var(--accent); }
+    .section-label { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin: 2rem 0 0.5rem; padding: 0.3rem 0.6rem; border-radius: 4px; display: inline-block; }
+    .section-label-soft { background: rgba(251,191,36,0.15); color: var(--yellow); }
+    .section-label-hard { background: rgba(248,113,113,0.15); color: var(--red); }
+    .section-label-general { background: rgba(56,189,248,0.12); color: var(--accent); }
+  </style>
+</head>
+<body>
+
+<h1>AI Enforcement for monday Agents — Meeting Prep</h1>
+<p class="meta">Open topics for the meeting with the enforcement team. Organized by enforcement type so each question lands in the right context.<br>Prepared by: Roni | Mar 2026</p>
+
+<nav class="toc">
+  <strong>Topics</strong>
+  <ul>
+    <li style="margin-top:0.5rem; color: var(--yellow); font-weight:600;">Soft enforcement</li>
+    <li><a href="#s1">S1. What does "soft" mean for an agent?</a></li>
+    <li><a href="#s2">S2. What counts as "new" vs "existing" work?</a></li>
+    <li><a href="#s3">S3. Scheduled agents — silent skipped runs</a></li>
+    <li><a href="#s4">S4. Auto-resume when credits come back</a></li>
+    <li style="margin-top:0.5rem; color: var(--red); font-weight:600;">Hard enforcement</li>
+    <li><a href="#h1">H1. What does "hard" mean for an agent?</a></li>
+    <li><a href="#h2">H2. Mid-task interruption and partial work</a></li>
+    <li><a href="#h3">H3. Manual restart after hard stop</a></li>
+    <li><a href="#h4">H4. Immediate notifications for hard stops</a></li>
+    <li style="margin-top:0.5rem; color: var(--accent); font-weight:600;">General (applies to both)</li>
+    <li><a href="#g1">G1. Enforcement level: per-user or per-agent?</a></li>
+    <li><a href="#g2">G2. Account-level vs agent-level exhaustion</a></li>
+    <li><a href="#g3">G3. Blast radius: shared credit pools</a></li>
+    <li><a href="#g4">G4. Agent chains and cascading failure</a></li>
+    <li><a href="#g5">G5. Orphaned agents (owner left)</a></li>
+    <li><a href="#g6">G6. Member → Admin request flow</a></li>
+    <li><a href="#g7">G7. Notification channels and thresholds</a></li>
+  </ul>
+</nav>
+
+<hr>
+
+<!-- ═══════════════════════════════════════ SOFT ═══════════════════════════════════════ -->
+<div class="section-label section-label-soft">Soft enforcement</div>
+
+<div class="topic topic-soft" id="s1">
+  <div class="topic-title">S1. What does "soft" mean for an agent? <span class="tag tag-soft">SOFT</span></div>
+  <div class="topic-context">Soft enforcement today: "existing workflows keep running, can't create new ones." But agents aren't workflows a user clicks — they're autonomous background workers.</div>
+  <p class="question">Questions:</p>
+  <div class="options">
+    <ul>
+      <li>Does "existing work continues" mean the agent <strong>finishes its current running task</strong> and then pauses? Or does it mean the agent <strong>stays deployed with active triggers</strong> but each trigger invocation is capped?</li>
+      <li>What is the agent's <strong>visible status</strong> after soft enforcement? (e.g., "Paused," "Limited," "Active with warnings")</li>
+      <li>Is the agent's state recoverable without any user action (auto-resume), or does someone need to do something?</li>
+    </ul>
+  </div>
+</div>
+
+<div class="topic topic-soft" id="s2">
+  <div class="topic-title">S2. What counts as "new" vs "existing" work? <span class="tag tag-soft">SOFT</span></div>
+  <div class="topic-context">This is the core definitional problem for soft enforcement on agents. The answer determines whether soft enforcement gently slows the agent or effectively kills it.</div>
+  <p class="question">Questions:</p>
+  <div class="options">
+    <ul>
+      <li>A <strong>running task</strong> (multi-step, currently executing) — "existing." Clear. But what about:</li>
+      <li>A <strong>deployed agent</strong> that is idle, waiting for a trigger — is the next trigger invocation "new"?</li>
+      <li>A <strong>scheduled agent</strong> (runs daily at 9am) — is tomorrow's 9am run "new"?</li>
+      <li>A <strong>reactive trigger</strong> (fires on board status change) — is the next status change "new"?</li>
+      <li>If all future invocations are "new," soft enforcement is identical to hard for agents. <strong>Is that the intent?</strong></li>
+    </ul>
+  </div>
+  <p class="risk">Risk: if not defined, engineers will guess. Different agents will handle "new vs existing" inconsistently.</p>
+</div>
+
+<div class="topic topic-soft" id="s3">
+  <div class="topic-title">S3. Scheduled agents — silent skipped runs <span class="tag tag-soft">SOFT</span></div>
+  <div class="topic-context">Scheduled agents (daily report, weekly sync) are the most likely to silently fail under soft enforcement. The agent just doesn't run. Nobody is watching.</div>
+  <p class="question">Questions:</p>
+  <div class="options">
+    <ul>
+      <li>When a scheduled run is skipped, is it <strong>logged</strong>? Where? (agent activity log, admin digest, notification)</li>
+      <li>Does the system <strong>retry</strong> the missed run when credits are back, or is it lost?</li>
+      <li>Is there a visible <strong>counter</strong> of missed runs? (e.g., "missed 3 runs this week")</li>
+      <li>Does the enforcement backend distinguish scheduled vs event-driven agents? Does it need to?</li>
+    </ul>
+  </div>
+  <p class="risk">Risk: daily report agent silently stops for a week. Nobody notices until someone asks "where's the report?"</p>
+</div>
+
+<div class="topic topic-soft" id="s4">
+  <div class="topic-title">S4. Auto-resume when credits come back <span class="tag tag-soft">SOFT</span></div>
+  <div class="topic-context">Under soft enforcement, the agent paused gracefully. When credits are available again (admin adds credits, new billing cycle), should it just pick up?</div>
+  <p class="question">Questions:</p>
+  <div class="options">
+    <ul>
+      <li>Does the enforcement backend support <strong>auto-resume</strong> (agent restarts on its own when credits refill)?</li>
+      <li>If 10 agents are paused and credits refill, do they <strong>all resume at once</strong>? Is there a stampede/burst risk?</li>
+      <li>Does the agent resume from <strong>where it left off</strong> (next scheduled run, next trigger) or does it start fresh?</li>
+      <li>Is there a notification when an agent auto-resumes? ("Agent [name] resumed — credits available")</li>
+    </ul>
+  </div>
+</div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════ HARD ═══════════════════════════════════════ -->
+<div class="section-label section-label-hard">Hard enforcement</div>
+
+<div class="topic topic-hard" id="h1">
+  <div class="topic-title">H1. What does "hard" mean for an agent? <span class="tag tag-hard">HARD</span></div>
+  <div class="topic-context">Hard enforcement = stricter block. But for an autonomous agent, "stop immediately" has real consequences — unlike clicking a button in Sidekick where you just can't click again.</div>
+  <p class="question">Questions:</p>
+  <div class="options">
+    <ul>
+      <li>Does "hard" mean the agent is <strong>interrupted mid-action</strong> (immediate kill) or <strong>finishes the current atomic action</strong> then stops (graceful hard stop)?</li>
+      <li>What is the agent's <strong>visible status</strong>? (e.g., "Stopped," "Blocked")</li>
+      <li>Can the agent be hard-stopped by the <strong>enforcement backend automatically</strong> (limit hit), or only by <strong>admin action</strong> (admin manually hard-blocks)?</li>
+      <li>Is hard enforcement <strong>per the admin's choice</strong> (admin picks soft vs hard per agent) or <strong>system-decided</strong> (e.g., soft at 100%, hard at 120%)?</li>
+    </ul>
+  </div>
+</div>
+
+<div class="topic topic-hard" id="h2">
+  <div class="topic-title">H2. Mid-task interruption and partial work <span class="tag tag-hard">HARD</span></div>
+  <div class="topic-context">The defining risk of hard enforcement. An agent mid-way through a multi-step task is stopped. Data may be half-written.</div>
+  <p class="question">Questions:</p>
+  <div class="options">
+    <ul>
+      <li>Does the enforcement check happen <strong>before each action</strong> (pre-check: clean break before next step) or <strong>after credits are consumed</strong> (post-check: could overshoot)?</li>
+      <li>For multi-step tasks: is there a concept of a <strong>"transaction"</strong> (all-or-nothing) or is <strong>partial completion</strong> the expected outcome?</li>
+      <li>If partial: is there a <strong>log of where the agent stopped</strong>? (e.g., "processed 47 of 100 rows")</li>
+      <li>Who is responsible for <strong>cleaning up partial work</strong> — the user manually, the agent on restart, or the system?</li>
+      <li>Can the agent <strong>overshoot the limit</strong> to finish a critical atomic action (e.g., complete sending an email), or is it a hard cut regardless?</li>
+    </ul>
+  </div>
+  <p class="risk">Risk: 47 of 100 rows updated. Email sent but no follow-up. Customer-facing data left in a broken state with no indicator of where the agent stopped.</p>
+</div>
+
+<div class="topic topic-hard" id="h3">
+  <div class="topic-title">H3. Manual restart after hard stop <span class="tag tag-hard">HARD</span></div>
+  <div class="topic-context">After a hard stop, the agent should NOT auto-resume — someone needs to consciously restart it. But what does that look like?</div>
+  <p class="question">Questions:</p>
+  <div class="options">
+    <ul>
+      <li>When credits are added after a hard stop, does the agent <strong>stay stopped</strong> until an admin manually restarts?</li>
+      <li>Does the admin see a <strong>"Restart agent" CTA</strong> on the agent card, or do they need to go to settings?</li>
+      <li>On restart, does the agent <strong>retry the interrupted task</strong>, or does it start fresh from the next trigger?</li>
+      <li>If the agent was mid-task: is there a <strong>"Review incomplete work"</strong> step before restart?</li>
+      <li>Can a <strong>member</strong> request restart, or is it admin-only?</li>
+    </ul>
+  </div>
+  <p class="risk">Risk: admin adds credits but forgets to restart. Agent stays dead indefinitely. Nobody notices.</p>
+</div>
+
+<div class="topic topic-hard" id="h4">
+  <div class="topic-title">H4. Immediate notifications for hard stops <span class="tag tag-hard">HARD</span></div>
+  <div class="topic-context">Hard stops are urgent — they can leave broken work. A daily digest is not enough. The admin needs to know now.</div>
+  <p class="question">Questions:</p>
+  <div class="options">
+    <ul>
+      <li>Does the enforcement backend support <strong>real-time push notifications</strong> for hard stops (not just digest)?</li>
+      <li>What channels? (in-app notification, email, webhook, Slack integration)</li>
+      <li>Does the notification include <strong>context about what was interrupted</strong>? (e.g., "stopped mid-task: updating board [name], 47 of 100 rows processed")</li>
+      <li>If the agent was doing <strong>customer-facing work</strong> (emails, support tickets), is there an <strong>escalation path</strong> beyond notification?</li>
+    </ul>
+  </div>
+</div>
+
+<hr>
+
+<!-- ═══════════════════════════════════════ GENERAL ═══════════════════════════════════════ -->
+<div class="section-label section-label-general">General (applies to both soft and hard)</div>
+
+<div class="topic topic-general" id="g1">
+  <div class="topic-title">G1. Enforcement level: per-user or per-agent? <span class="tag tag-general">GENERAL</span></div>
+  <div class="topic-context">Today the Admin Panel sets per-user limits. But one user can have multiple agents with very different criticality.</div>
+  <p class="question">Questions:</p>
+  <div class="options">
+    <ul>
+      <li>Does the enforcement backend support <strong>per-agent</strong> limits, or only per-user?</li>
+      <li>If per-user only: is per-agent on the roadmap? When?</li>
+      <li>If a user has 5 agents and hits their user-level limit, <strong>which agent stops first</strong>? Random, FIFO, or admin-prioritized?</li>
+      <li>Can we have both — per-agent limit (primary) and per-user ceiling (secondary cap)?</li>
+    </ul>
+  </div>
+  <p class="risk">Risk if per-user only: one runaway agent kills all other agents for that user. No way to protect critical agents.</p>
+</div>
+
+<div class="topic topic-general" id="g2">
+  <div class="topic-title">G2. Account-level vs agent-level exhaustion <span class="tag tag-general">GENERAL</span></div>
+  <div class="topic-context">Two different things: a single agent hits its own limit, vs the entire account runs out of credits. Both can happen, and the messaging/CTA is different.</div>
+  <p class="question">Questions:</p>
+  <div class="options">
+    <ul>
+      <li>Are these <strong>two separate enforcement checks</strong> (agent limit + account limit) or one?</li>
+      <li>Which takes precedence? Can an agent have credits left but be blocked because the <strong>account pool</strong> is empty?</li>
+      <li>If an admin buys more account credits, do agent-level limits also increase, or are they <strong>independent</strong>?</li>
+    </ul>
+  </div>
+</div>
+
+<div class="topic topic-general" id="g3">
+  <div class="topic-title">G3. Blast radius: shared credit pools <span class="tag tag-general">GENERAL</span></div>
+  <div class="topic-context">Shared pools (per-user or per-account) mean one heavy agent can exhaust credits for everyone.</div>
+  <p class="question">Questions:</p>
+  <div class="options">
+    <ul>
+      <li>Does the backend support <strong>isolated pools</strong> (per-agent) or only shared?</li>
+      <li>If shared: is there <strong>priority/ordering</strong> when the pool runs out?</li>
+      <li>Can an admin set a <strong>"reserved" allocation</strong> for critical agents within a shared pool?</li>
+      <li>When multiple agents are affected, does the notification list <strong>all of them</strong> or just the one that triggered?</li>
+    </ul>
+  </div>
+  <p class="risk">Risk: User B's critical agent dies because User A's experimental agent burned through the shared pool.</p>
+</div>
+
+<div class="topic topic-general" id="g4">
+  <div class="topic-title">G4. Agent chains and cascading failure <span class="tag tag-general">GENERAL</span></div>
+  <div class="topic-context">Agent A triggers Agent B. If A is blocked, B never fires — but B looks healthy because it has credits.</div>
+  <p class="question">Questions:</p>
+  <div class="options">
+    <ul>
+      <li>Does the backend know about <strong>agent dependencies</strong>? Can it flag downstream impact?</li>
+      <li>When Agent A is blocked, should Agent B show <strong>"waiting — depends on Agent A"</strong>?</li>
+      <li>Should chained agents share a credit pool, or stay independent?</li>
+      <li>Is there visibility for the admin to see <strong>"A triggers B"</strong> anywhere today?</li>
+    </ul>
+  </div>
+  <p class="risk">Risk: cascading silent failure. Admin thinks Agent B is fine. It's actually dead because its trigger (Agent A) is blocked.</p>
+</div>
+
+<div class="topic topic-general" id="g5">
+  <div class="topic-title">G5. Orphaned agents (owner left the company) <span class="tag tag-general">GENERAL</span></div>
+  <div class="topic-context">User created an agent, then left the org. Agent is still running, consuming credits. It hits a limit.</div>
+  <p class="question">Questions:</p>
+  <div class="options">
+    <ul>
+      <li>Does the backend attribute credits to the <strong>creator</strong> or to the <strong>account</strong>?</li>
+      <li>When a user is removed, what happens to their agents? Paused? Transferred? Keep running under account pool?</li>
+      <li>Who gets the limit notification — all admins? Nobody?</li>
+      <li>Is there a concept of <strong>agent ownership transfer</strong>?</li>
+    </ul>
+  </div>
+  <p class="risk">Risk: agent silently dies. Nobody is notified. Nobody knows it exists.</p>
+</div>
+
+<div class="topic topic-general" id="g6">
+  <div class="topic-title">G6. Member → Admin request flow <span class="tag tag-general">GENERAL</span></div>
+  <div class="topic-context">Members can't buy credits or change limits. They need a "Request more credits" CTA that notifies the admin.</div>
+  <p class="question">Questions:</p>
+  <div class="options">
+    <ul>
+      <li>Does a <strong>"request credits" mechanism</strong> already exist, or does product need to build it?</li>
+      <li>What context should the request include? (agent name, usage, member name, link to agent settings)</li>
+      <li>Who receives it — agent owner, all admins, or billing admin?</li>
+      <li>Is there a <strong>rate limit</strong> on requests? (one per agent per day)</li>
+      <li>When the admin acts, does the member get a <strong>confirmation</strong>? ("Agent is back online")</li>
+    </ul>
+  </div>
+</div>
+
+<div class="topic topic-general" id="g7">
+  <div class="topic-title">G7. Notification channels and thresholds <span class="tag tag-general">GENERAL</span></div>
+  <div class="topic-context">Agents run in the background. Without the right notification at the right time, enforcement happens silently.</div>
+  <p class="question">Questions:</p>
+  <div class="options">
+    <ul>
+      <li>What channels does the backend support? (in-app, email, webhook, daily digest)</li>
+      <li>Can notifications be <strong>per-agent</strong> (to agent owner) or only per-account (all admins)?</li>
+      <li>Is there a <strong>warning threshold</strong> before limit (e.g., 80%)? Is it configurable?</li>
+      <li>Does the backend send notifications, or does product subscribe to events and build them?</li>
+    </ul>
+  </div>
+</div>
+
+<hr>
+
+<h1>Going into the meeting</h1>
+<p>The enforcement team owns the backend; we own the in-product experience. Walk out with answers to:</p>
+<ol style="margin-top: 0.5rem;">
+  <li><strong>What exists today</strong> — which topics are already decided/built?</li>
+  <li><strong>What's on their roadmap</strong> — per-agent limits, hard enforcement, notification hooks, warning thresholds.</li>
+  <li><strong>Where we need to influence</strong> — if the backend doesn't support what we need, make the case now before it's built.</li>
+  <li><strong>API contract</strong> — what events/APIs does the enforcement backend expose so we can build messaging, CTAs, and notifications?</li>
+</ol>
+
+</body>
+</html>

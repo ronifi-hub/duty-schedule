@@ -1,0 +1,124 @@
+---
+description: Figma MCP integration for this PM workspace — no app repo; monday DS lives in Figma cloud. Use when building specs from Figma, FigJam flows, or HTML prototypes.
+alwaysApply: false
+---
+
+# Figma MCP — design system rules (PM workspace)
+
+This repository is a **product / knowledge workspace**, not a monday.com web app. **There is no `package.json`, no React/Vue source, no in-repo design tokens, and no Storybook.** Integration with Figma happens through **MCP tools** and **external** monday design libraries in Figma. Do **not** invent token paths or component folders that do not exist in git.
+
+---
+
+## 1. Token definitions
+
+| Question | Answer in *this* repo |
+|----------|------------------------|
+| Where are tokens? | **Not in git.** Tokens live in **monday’s Figma design system** (variables/styles). Use Figma MCP `get_variable_defs` **on a linked library file** when the user provides a `fileKey`, or rely on `get_design_context` output from a node that uses published variables. |
+| Format | **Figma Variables** / styles in cloud — not JSON tokens in the workspace. |
+| Transformation | **None** in-repo. |
+
+**HTML prototypes** in this workspace (e.g. slide decks) use a **small fixed palette** aligned to monday marketing feel — see [`.cursor/rules/figma-integration.mdc`](figma-integration.mdc) `:root` block (`--primary: #6161ff`, etc.). That is **not** the source of truth for production; Figma DS is.
+
+---
+
+## 2. Component library
+
+| Question | Answer |
+|----------|--------|
+| Where are UI components? | **Figma monday design libraries** (linked in org Figma). Not cloned into this repo. |
+| Architecture | Product UI is built by monday eng elsewhere; here we only **reference** components by pattern name in PRDs (Banner, Modal, Button, Table). |
+| Documentation | **Figma** component docs + Design team; optional `search_design_system` (Figma MCP) when available. |
+
+---
+
+## 3. Frameworks and libraries
+
+| Question | Answer |
+|----------|--------|
+| UI framework | **N/A** — no app framework in this workspace. |
+| Styling | Standalone **HTML** decks use inline `<style>` and the palette above. |
+| Build | **None** — no bundler. |
+
+---
+
+## 4. Asset management
+
+| Question | Answer |
+|----------|--------|
+| Images | `Knowledge/Research/**/screenshots/` (competitive research, exports). |
+| Optimization | Manual; no CDN config in repo. |
+| Figma assets | Exported from Figma or captured via MCP `get_screenshot` / `get_design_context`. |
+
+---
+
+## 5. Icon system
+
+| Question | Answer |
+|----------|--------|
+| In repo | **None.** |
+| In product | monday **Vibe** / icon set in Figma libraries — reference in specs by **pattern name**, not by file path. |
+
+---
+
+## 6. Styling approach
+
+| Question | Answer |
+|----------|--------|
+| Methodology | PRDs and HTML use **plain CSS** in markdown or single-file HTML. |
+| Global styles | Only inside each HTML file’s `<style>` block. |
+| Responsive | `@media` in HTML decks where needed. |
+
+---
+
+## 7. Project structure (workspace)
+
+```
+Knowledge/
+  Tasks/           # PRDs, presentations, design briefs
+  Research/        # Research briefs, screenshots
+.cursor/
+  rules/           # Including figma-integration + this file
+  skills/          # PRD, market research, etc.
+```
+
+Feature work is **document-centric** (PRD → deck → Figma brief), not **src/**-centric.
+
+---
+
+## MCP workflow (how the agent should use Figma)
+
+1. **`get_metadata`** — Explore a file by `fileKey` + `nodeId` to find frames.  
+2. **`get_design_context`** — Primary tool for a **specific node** (returns structure + screenshot). Requires correct `nodeId` (`26815-11134` → `26815:11134`).  
+3. **`get_screenshot`** — Full-frame capture for docs.  
+4. **`generate_diagram`** — **FigJam** flowcharts from Mermaid (e.g. migration flows). User **claims** the file via the returned **claim URL**.  
+5. **`use_figma`** + **`search_design_system`** — When building screens from **DS components** (if enabled for the org).  
+6. **`generate_figma_design`** — Capture URL/HTML into Figma; use per Figma server instructions for local vs external URLs.
+
+**Desktop Figma:** Some tools require a **layer selected** in Figma desktop — if `get_design_context` fails, select the target frame and retry.
+
+---
+
+## Building a Figma file from the “existing users AI migration” flow
+
+**Inputs already in-repo:**
+
+- **FigJam flow** — Created via MCP `generate_diagram` (“Existing users AI migration flows”). Open the **claim link** from the tool response in FigJam, then **duplicate** or **link** it from your deliverable file.  
+- **Screen inventory** — [`Knowledge/Tasks/DESIGN-BRIEF-AI-Migration-Figma-mondayDS.md`](../../Knowledge/Tasks/DESIGN-BRIEF-AI-Migration-Figma-mondayDS.md) (flows **A–H**).  
+- **Pricing visual reference** — [Pricing page with AI](https://www.figma.com/design/DIyM0lkmlwnzMkTI0AZKs8/Pricing-page-with-AI?node-id=26815-11134&m=dev) (`fileKey` `DIyM0lkmlwnzMkTI0AZKs8`).
+
+**Recommended Figma file structure (designer execution):**
+
+1. **Cover** — Initiative title + links to PRD + FigJam.  
+2. **Flow** — Paste **FigJam** diagram or embed link.  
+3. **Pages** — One page per flow **A–H** (May 6 discovery, CTA, 80% top-up, add-on migration modal, high usage, overlap, agents, post-promo).  
+4. **Components** — Instance **monday DS**; reuse **one** migration **price module** for add-on + high-usage variants (copy only).  
+5. **Ready for dev** — Mark frames; note flag keys in description.
+
+**Figma Make:** For **prompt-generated** UI explorations, use **Figma Make** in the browser per org workflow; this repo does **not** store Make sources. Export screenshots into `Knowledge/Tasks/` if needed for reviews.
+
+---
+
+## Cross-references
+
+- [`.cursor/rules/figma-integration.mdc`](figma-integration.mdc) — HTML palette, FigJam note, file placement.  
+- [`Knowledge/Tasks/DESIGN-BRIEF-AI-Migration-Figma-mondayDS.md`](../../Knowledge/Tasks/DESIGN-BRIEF-AI-Migration-Figma-mondayDS.md) — Flow A–H deliverables.

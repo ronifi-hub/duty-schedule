@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vibe Publish Probability by Interaction Type — Non-Paying Accounts</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+    h1 { font-size: 1.6rem; font-weight: 700; color: #f8fafc; margin-bottom: 0.25rem; }
+    .subtitle { font-size: 0.875rem; color: #94a3b8; margin-bottom: 0.5rem; line-height: 1.6; }
+    .last-updated { font-size: 0.75rem; color: #64748b; margin-bottom: 2rem; }
+
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+      max-width: 1400px;
+    }
+    .kpi-card {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 1.25rem;
+      border-left: 4px solid;
+    }
+    .kpi-card .label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+    .kpi-card .value { font-size: 1.75rem; font-weight: 700; }
+    .kpi-card .delta { font-size: 0.75rem; margin-top: 0.25rem; color: #94a3b8; }
+
+    .charts { display: grid; gap: 2rem; max-width: 1400px; }
+    .chart-card {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
+    }
+    .chart-card h2 { font-size: 1rem; font-weight: 600; margin: 0 0 0.25rem; color: #cbd5e1; }
+    .chart-card .chart-sub { font-size: 0.75rem; color: #64748b; margin-bottom: 1rem; }
+    .chart-container { position: relative; height: 340px; }
+    .chart-container.short { height: 280px; }
+    .chart-container.tall { height: 400px; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+    @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; margin-top: 0.5rem; }
+    th, td { padding: 0.5rem 0.75rem; text-align: right; border-bottom: 1px solid #334155; }
+    th { color: #94a3b8; font-weight: 500; position: sticky; top: 0; background: #1e293b; }
+    th:first-child, td:first-child { text-align: left; }
+    td:first-child { font-weight: 500; color: #cbd5e1; }
+    .pct { color: #34d399; }
+    .pct-low { color: #f87171; }
+
+    .takeaway {
+      background: #334155;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      font-size: 0.875rem;
+      color: #cbd5e1;
+      margin-top: 1rem;
+      border-left: 4px solid #3b82f6;
+    }
+    .takeaway strong { color: #f8fafc; }
+
+    .section-divider {
+      margin: 2.5rem 0 1.5rem;
+      padding-top: 2rem;
+      border-top: 1px solid #334155;
+      max-width: 1400px;
+    }
+    .section-divider h1 { font-size: 1.25rem; margin-bottom: 0.5rem; }
+
+    .legend-inline {
+      display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 0.75rem;
+      font-size: 0.8125rem; color: #94a3b8;
+    }
+    .legend-inline span { display: inline-flex; align-items: center; gap: 0.35rem; }
+    .legend-inline .dot { width: 10px; height: 10px; border-radius: 50%; }
+
+    @media print {
+      body { background: #0f172a; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .chart-card { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Publish Probability by Interaction Type — Non-Paying Vibe Accounts</h1>
+  <p class="subtitle">
+    <strong>Non-paying accounts only</strong> (free plan, no active trial or paid subscription for Vibe).<br>
+    Segments by <strong>first interaction type</strong>:
+    <strong style="color:#8b5cf6">Discuss Mode</strong> (ai_app_chat_mode_clicked) ·
+    <strong style="color:#3b82f6">Prompt Only</strong> (sent prompt without discuss/template) ·
+    <strong style="color:#10b981">Used Template</strong>.<br>
+    Also shows how each segment affects the <strong>2nd prompt rate</strong> and its impact on publish.
+    Source: BigBrain · Query: <code>vibe_publish_by_interaction_type.sql</code>
+  </p>
+  <p class="last-updated">Last updated: — (placeholder data — replace DATA objects with BigBrain query results)</p>
+
+  <!-- KPI Cards -->
+  <div class="kpi-row" id="kpiRow"></div>
+
+  <div class="charts">
+    <!-- ============================================================ -->
+    <!-- SECTION 1: Publish Click Probability by Segment              -->
+    <!-- ============================================================ -->
+    <div class="chart-card">
+      <h2>Publish Click Probability by Interaction Type</h2>
+      <p class="chart-sub">% of non-paying users who clicked publish, segmented by their first interaction type</p>
+      <div class="chart-container short">
+        <canvas id="publishRateChart"></canvas>
+      </div>
+      <p class="takeaway">
+        <strong>Template users have the highest publish rate (52.1%)</strong> — the guided path drives faster activation.
+        Prompt-only users are at 38.4%, while discuss-mode users are at 31.7%.
+        Discuss mode's lower rate may reflect exploratory intent rather than build intent.
+      </p>
+    </div>
+
+    <div class="grid-2">
+      <div class="chart-card">
+        <h2>Volume: Users per Segment</h2>
+        <p class="chart-sub">Non-paying admins with at least 1 Vibe interaction</p>
+        <div class="chart-container short">
+          <canvas id="volumeDonut"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h2>Users & Publish Clicks by Segment</h2>
+        <p class="chart-sub">Absolute numbers: total users vs those who clicked publish</p>
+        <div class="chart-container short">
+          <canvas id="volumeBarChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary table -->
+    <div class="chart-card">
+      <h2>Summary: Publish Rate by Interaction Type</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Segment</th>
+            <th>Users (saw preview)</th>
+            <th>Clicked Publish</th>
+            <th>Publish Rate</th>
+            <th>Lift vs Overall</th>
+          </tr>
+        </thead>
+        <tbody id="publishSummaryTable"></tbody>
+      </table>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SECTION 2: 2nd Prompt Rate by Segment                        -->
+    <!-- ============================================================ -->
+    <div class="section-divider">
+      <h1>How Each Segment Affects the 2nd Prompt</h1>
+      <p class="subtitle" style="margin-bottom:0;">
+        For each interaction type: what % sent a <strong>2nd prompt</strong>?
+        Then: how does sending a 2nd prompt affect <strong>publish probability</strong>?
+      </p>
+    </div>
+
+    <div class="chart-card">
+      <h2>2nd Prompt Rate by Interaction Type</h2>
+      <p class="chart-sub">% of users who sent at least 2 prompts, by first interaction type</p>
+      <div class="chart-container short">
+        <canvas id="secondPromptRateChart"></canvas>
+      </div>
+      <p class="takeaway">
+        <strong>Discuss mode drives the highest 2nd prompt rate (44.8%)</strong> — the conversational UX encourages iteration.
+        Prompt-only: 28.2%. Template: 22.4% (templates often feel "done" after 1 prompt).
+      </p>
+    </div>
+
+    <div class="chart-card">
+      <h2>Publish Rate: With vs Without 2nd Prompt (by Segment)</h2>
+      <p class="chart-sub">For each segment: publish rate for users who sent 2+ prompts vs exactly 1</p>
+      <div class="chart-container tall">
+        <canvas id="publishBy2ndPromptChart"></canvas>
+      </div>
+      <p class="takeaway">
+        <strong>The 2nd prompt lifts publish rate across all segments.</strong>
+        Biggest lift for <strong>Prompt Only</strong> (+25.6pp: 29.8% → 55.4%).
+        Discuss mode: +20.5pp (22.4% → 42.9%).
+        Template: +17.8pp (47.2% → 65.0%).
+        Takeaway: encouraging a 2nd prompt is the highest-leverage activation lever, especially for prompt-only users.
+      </p>
+    </div>
+
+    <!-- Detailed table for 2nd prompt effect -->
+    <div class="chart-card">
+      <h2>Detailed Breakdown: 2nd Prompt Effect on Publish</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Segment</th>
+            <th>Total Users</th>
+            <th>Sent 2nd Prompt</th>
+            <th>2nd Prompt Rate</th>
+            <th>Publish Rate<br>(1 prompt only)</th>
+            <th>Publish Rate<br>(2+ prompts)</th>
+            <th>Lift (pp)</th>
+          </tr>
+        </thead>
+        <tbody id="secondPromptDetailTable"></tbody>
+      </table>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SECTION 3: Combined View — Segment × 2nd Prompt Matrix       -->
+    <!-- ============================================================ -->
+    <div class="section-divider">
+      <h1>Segment × 2nd Prompt Matrix</h1>
+      <p class="subtitle" style="margin-bottom:0;">
+        Heatmap-style view: publish rate for each (segment, prompt count) combination.
+        Identifies the <strong>highest-ROI activation path</strong>.
+      </p>
+    </div>
+
+    <div class="chart-card">
+      <h2>Publish Rate Matrix: Interaction Type × Prompt Count</h2>
+      <p class="chart-sub">Each cell = publish rate (%). Color intensity = publish rate.</p>
+      <div id="matrixContainer" style="overflow-x: auto;"></div>
+      <p class="takeaway">
+        <strong>Best activation path: Template + 2nd prompt (65.0% publish).</strong>
+        Even discuss-mode users who send a 2nd prompt reach 42.9% — close to prompt-only baseline.
+        Actionable: nudge discuss-mode users to send a prompt; nudge prompt-only users to send a 2nd.
+      </p>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- SQL Reference                                                -->
+    <!-- ============================================================ -->
+    <div class="chart-card" style="max-width: 1000px; margin-top: 1rem;">
+      <h2>SQL Query Reference</h2>
+      <p class="chart-sub">Run on BigBrain. Replace the DATA objects in the HTML with query results.</p>
+      <pre style="background:#0f172a; border-radius:8px; padding:1rem; font-size:0.72rem; color:#94a3b8; overflow-x:auto; white-space:pre-wrap; line-height:1.5;">
+-- vibe_publish_by_interaction_type.sql
+-- Non-paying Vibe accounts: publish probability by first interaction type
+-- Also: 2nd prompt rate and its effect on publish
+-- Segments: Discuss Mode | Prompt Only | Template
+-- Verify event names before running!
+
+WITH params AS (
+  SELECT DATE('{{date_range.start}}') AS start_date,
+         DATE('{{date_range.end}}')   AS end_date
+),
+
+-- Non-paying accounts: no active Vibe subscription or trial
+non_paying AS (
+  SELECT DISTINCT a.pulse_account_id
+  FROM bigbrain.final.daccounts a
+  WHERE (a.is_monday_account = 0 OR a.is_monday_account IS NULL)
+    -- Adjust these filters based on your actual schema for "non-paying":
+    -- Option A: no Vibe trial ever started
+    AND NOT EXISTS (
+      SELECT 1 FROM bigbrain.final.trial_starts t
+      WHERE t.account_id = a.account_id AND t.product = 'vibe'
+    )
+    -- Option B: check plan_id / subscription status
+    -- AND (a.vibe_plan_id IS NULL OR a.vibe_plan_id = 'free')
+),
+
+admin_users AS (
+  SELECT DISTINCT pulse_account_id, pulse_user_id
+  FROM bigbrain.final.dusers
+  WHERE is_admin = 1 AND enabled = 1
+),
+
+-- All relevant Vibe events for non-paying admin users
+ev AS (
+  SELECT e.pulse_account_id, e.pulse_user_id, e.name, e.created_at
+  FROM bigbrain.final.events e
+  INNER JOIN non_paying np ON np.pulse_account_id = e.pulse_account_id
+  INNER JOIN admin_users au ON au.pulse_account_id = e.pulse_account_id
+                            AND au.pulse_user_id = e.pulse_user_id
+  CROSS JOIN params p
+  WHERE DATE(e.created_at) BETWEEN p.start_date AND p.end_date
+    AND e.name IN (
+      'ai_app_chat_mode_clicked',        -- Discuss mode
+      'ai_app_user_prompt_received',     -- Prompt sent
+      'ai_app_template_clicked',         -- Template used (VERIFY event name)
+      'ai_app_preview_rendered',         -- Preview rendered
+      'ai_app_publish_clicked'           -- Publish clicked
+    )
+),
+
+-- Classify each user by first interaction type
+user_first_action AS (
+  SELECT pulse_user_id, segment
+  FROM (
+    SELECT pulse_user_id,
+      CASE
+        WHEN name = 'ai_app_chat_mode_clicked' THEN 'Discuss Mode'
+        WHEN name = 'ai_app_template_clicked'  THEN 'Template'
+        ELSE 'Prompt Only'
+      END AS segment,
+      ROW_NUMBER() OVER (PARTITION BY pulse_user_id ORDER BY created_at) AS rn
+    FROM ev
+    WHERE name IN (
+      'ai_app_chat_mode_clicked',
+      'ai_app_user_prompt_received',
+      'ai_app_template_clicked'
+    )
+  ) t
+  WHERE rn = 1
+),
+
+-- Prompt count per user
+user_prompt_count AS (
+  SELECT pulse_user_id, COUNT(*) AS prompt_count
+  FROM ev
+  WHERE name = 'ai_app_user_prompt_received'
+  GROUP BY pulse_user_id
+),
+
+-- Users who saw preview
+user_preview AS (
+  SELECT DISTINCT pulse_user_id
+  FROM ev
+  WHERE name = 'ai_app_preview_rendered'
+),
+
+-- Users who clicked publish
+user_publish AS (
+  SELECT DISTINCT pulse_user_id
+  FROM ev
+  WHERE name = 'ai_app_publish_clicked'
+),
+
+-- Main result set
+user_summary AS (
+  SELECT
+    fa.pulse_user_id,
+    fa.segment,
+    COALESCE(pc.prompt_count, 0) AS prompt_count,
+    CASE WHEN pr.pulse_user_id IS NOT NULL THEN 1 ELSE 0 END AS saw_preview,
+    CASE WHEN pu.pulse_user_id IS NOT NULL THEN 1 ELSE 0 END AS clicked_publish
+  FROM user_first_action fa
+  LEFT JOIN user_prompt_count pc ON pc.pulse_user_id = fa.pulse_user_id
+  LEFT JOIN user_preview pr      ON pr.pulse_user_id = fa.pulse_user_id
+  LEFT JOIN user_publish pu      ON pu.pulse_user_id = fa.pulse_user_id
+)
+
+-- Query 1: Publish rate by segment
+SELECT segment,
+       COUNT(*) AS total_users,
+       SUM(saw_preview) AS saw_preview,
+       SUM(clicked_publish) AS clicked_publish,
+       ROUND(100.0 * SUM(clicked_publish) / NULLIF(SUM(saw_preview), 0), 1) AS publish_rate_pct
+FROM user_summary
+WHERE saw_preview = 1
+GROUP BY segment
+ORDER BY segment;
+
+-- Query 2: 2nd prompt rate and publish effect by segment
+-- SELECT segment,
+--        COUNT(*) AS total_users,
+--        SUM(CASE WHEN prompt_count >= 2 THEN 1 ELSE 0 END) AS sent_2nd_prompt,
+--        ROUND(100.0 * SUM(CASE WHEN prompt_count >= 2 THEN 1 ELSE 0 END) / COUNT(*), 1) AS second_prompt_rate,
+--        ROUND(100.0 * SUM(CASE WHEN prompt_count = 1 AND clicked_publish = 1 THEN 1 ELSE 0 END)
+--              / NULLIF(SUM(CASE WHEN prompt_count = 1 THEN 1 ELSE 0 END), 0), 1) AS publish_rate_1_prompt,
+--        ROUND(100.0 * SUM(CASE WHEN prompt_count >= 2 AND clicked_publish = 1 THEN 1 ELSE 0 END)
+--              / NULLIF(SUM(CASE WHEN prompt_count >= 2 THEN 1 ELSE 0 END), 0), 1) AS publish_rate_2plus_prompts
+-- FROM user_summary
+-- WHERE saw_preview = 1
+-- GROUP BY segment
+-- ORDER BY segment;
+      </pre>
+      <p style="font-size:0.72rem; color:#64748b; margin-top:0.75rem; line-height:1.5;">
+        <strong>Event names to verify:</strong><br>
+        <code>ai_app_chat_mode_clicked</code> — Discuss mode (confirmed by user)<br>
+        <code>ai_app_template_clicked</code> — Template used (verify: might be <code>ai_app_use_template_clicked</code> or <code>ai_app_template_selected</code>)<br>
+        <code>ai_app_user_prompt_received</code> — Prompt sent (confirmed from existing queries)<br>
+        <code>ai_app_publish_clicked</code> — Publish clicked (confirmed from existing queries)<br>
+        <strong>Non-paying filter:</strong> Adjust the <code>non_paying</code> CTE based on your actual schema for identifying free/non-paying accounts.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    //  DATA — Replace with BigBrain query results.
+    //  PLACEHOLDER values below. Structure mirrors what the SQL returns.
+    // =========================================================================
+
+    // --- Section 1: Publish rate by segment ---
+    const SEGMENTS = {
+      discuss:  { label: 'Discuss Mode',  color: '#8b5cf6', borderColor: '#a78bfa' },
+      prompt:   { label: 'Prompt Only',   color: '#3b82f6', borderColor: '#60a5fa' },
+      template: { label: 'Used Template', color: '#10b981', borderColor: '#34d399' },
+    };
+
+    const PUBLISH_DATA = {
+      discuss:  { users: 1204, sawPreview: 1148, clickedPublish: 364 },
+      prompt:   { users: 5132, sawPreview: 4876, clickedPublish: 1872 },
+      template: { users: 1712, sawPreview: 1658, clickedPublish: 864  },
+    };
+
+    // --- Section 2: 2nd prompt effect ---
+    const SECOND_PROMPT_DATA = {
+      discuss: {
+        total: 1148,
+        sent2nd: 514,
+        publishRate1Prompt: 22.4,
+        publishRate2Plus: 42.9,
+      },
+      prompt: {
+        total: 4876,
+        sent2nd: 1375,
+        publishRate1Prompt: 29.8,
+        publishRate2Plus: 55.4,
+      },
+      template: {
+        total: 1658,
+        sent2nd: 371,
+        publishRate1Prompt: 47.2,
+        publishRate2Plus: 65.0,
+      },
+    };
+
+    // =========================================================================
+    //  COMPUTED VALUES
+    // =========================================================================
+    const segKeys = ['discuss', 'prompt', 'template'];
+
+    const publishRates = {};
+    let totalUsers = 0, totalPublish = 0;
+    segKeys.forEach(k => {
+      const d = PUBLISH_DATA[k];
+      publishRates[k] = d.sawPreview ? ((d.clickedPublish / d.sawPreview) * 100) : 0;
+      totalUsers += d.sawPreview;
+      totalPublish += d.clickedPublish;
+    });
+    const overallPublishRate = totalUsers ? ((totalPublish / totalUsers) * 100) : 0;
+
+    // =========================================================================
+    //  KPI CARDS
+    // =========================================================================
+    const kpis = [
+      { label: 'Total Non-Paying Users', value: totalUsers.toLocaleString(), border: '#64748b', delta: 'Admins who saw preview' },
+      { label: 'Overall Publish Rate', value: overallPublishRate.toFixed(1) + '%', border: '#f59e0b', delta: `${totalPublish.toLocaleString()} / ${totalUsers.toLocaleString()} users` },
+      { label: 'Discuss Mode', value: publishRates.discuss.toFixed(1) + '%', border: SEGMENTS.discuss.color, delta: `${PUBLISH_DATA.discuss.sawPreview.toLocaleString()} users (${((PUBLISH_DATA.discuss.sawPreview / totalUsers) * 100).toFixed(0)}%)` },
+      { label: 'Prompt Only', value: publishRates.prompt.toFixed(1) + '%', border: SEGMENTS.prompt.color, delta: `${PUBLISH_DATA.prompt.sawPreview.toLocaleString()} users (${((PUBLISH_DATA.prompt.sawPreview / totalUsers) * 100).toFixed(0)}%)` },
+      { label: 'Used Template', value: publishRates.template.toFixed(1) + '%', border: SEGMENTS.template.color, delta: `${PUBLISH_DATA.template.sawPreview.toLocaleString()} users (${((PUBLISH_DATA.template.sawPreview / totalUsers) * 100).toFixed(0)}%)` },
+      { label: 'Best Activation Path', value: '65.0%', border: '#34d399', delta: 'Template + 2nd prompt' },
+    ];
+
+    const kpiRow = document.getElementById('kpiRow');
+    kpis.forEach(k => {
+      const card = document.createElement('div');
+      card.className = 'kpi-card';
+      card.style.borderLeftColor = k.border;
+      card.innerHTML = `
+        <div class="label">${k.label}</div>
+        <div class="value" style="color:${k.border}">${k.value}</div>
+        <div class="delta">${k.delta}</div>
+      `;
+      kpiRow.appendChild(card);
+    });
+
+    // =========================================================================
+    //  CHART DEFAULTS
+    // =========================================================================
+    Chart.defaults.color = '#94a3b8';
+    Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
+    Chart.defaults.font.size = 11;
+
+    // =========================================================================
+    //  1. PUBLISH RATE BY SEGMENT (bar chart)
+    // =========================================================================
+    new Chart(document.getElementById('publishRateChart'), {
+      type: 'bar',
+      data: {
+        labels: segKeys.map(k => SEGMENTS[k].label),
+        datasets: [{
+          label: 'Publish Rate (%)',
+          data: segKeys.map(k => +publishRates[k].toFixed(1)),
+          backgroundColor: segKeys.map(k => SEGMENTS[k].color),
+          borderColor: segKeys.map(k => SEGMENTS[k].borderColor),
+          borderWidth: 1,
+          borderRadius: 4,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx => ctx.parsed.y.toFixed(1) + '%' } },
+          datalabels: {
+            anchor: 'end', align: 'top', color: '#f8fafc', font: { weight: 700, size: 13 },
+            formatter: v => v.toFixed(1) + '%'
+          }
+        },
+        scales: {
+          y: { min: 0, max: 65, grid: { color: 'rgba(148,163,184,0.12)' }, ticks: { callback: v => v + '%' } },
+          x: { grid: { display: false } }
+        }
+      },
+      plugins: [ChartDataLabels]
+    });
+
+    // =========================================================================
+    //  2. VOLUME DONUT
+    // =========================================================================
+    new Chart(document.getElementById('volumeDonut'), {
+      type: 'doughnut',
+      data: {
+        labels: segKeys.map(k => SEGMENTS[k].label),
+        datasets: [{
+          data: segKeys.map(k => PUBLISH_DATA[k].sawPreview),
+          backgroundColor: segKeys.map(k => SEGMENTS[k].color),
+          borderColor: '#1e293b',
+          borderWidth: 3,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '55%',
+        plugins: {
+          legend: { position: 'bottom', labels: { padding: 14, usePointStyle: true, pointStyle: 'circle' } },
+          tooltip: {
+            callbacks: {
+              label: ctx => `${ctx.label}: ${ctx.parsed.toLocaleString()} (${((ctx.parsed / totalUsers) * 100).toFixed(1)}%)`
+            }
+          }
+        }
+      }
+    });
+
+    // =========================================================================
+    //  3. VOLUME BAR (users vs publish clicks)
+    // =========================================================================
+    new Chart(document.getElementById('volumeBarChart'), {
+      type: 'bar',
+      data: {
+        labels: segKeys.map(k => SEGMENTS[k].label),
+        datasets: [
+          {
+            label: 'Users (saw preview)',
+            data: segKeys.map(k => PUBLISH_DATA[k].sawPreview),
+            backgroundColor: 'rgba(148,163,184,0.3)',
+            borderColor: '#94a3b8',
+            borderWidth: 1,
+            borderRadius: 3,
+          },
+          {
+            label: 'Clicked Publish',
+            data: segKeys.map(k => PUBLISH_DATA[k].clickedPublish),
+            backgroundColor: segKeys.map(k => SEGMENTS[k].color + 'cc'),
+            borderColor: segKeys.map(k => SEGMENTS[k].borderColor),
+            borderWidth: 1,
+            borderRadius: 3,
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'circle', padding: 12, font: { size: 10 } } },
+        },
+        scales: {
+          y: { grid: { color: 'rgba(148,163,184,0.12)' } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+
+    // =========================================================================
+    //  4. PUBLISH SUMMARY TABLE
+    // =========================================================================
+    const publishTableBody = document.getElementById('publishSummaryTable');
+    segKeys.forEach(k => {
+      const d = PUBLISH_DATA[k];
+      const rate = publishRates[k];
+      const lift = rate - overallPublishRate;
+      const liftStr = (lift >= 0 ? '+' : '') + lift.toFixed(1) + 'pp';
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><span style="color:${SEGMENTS[k].color}; font-weight:600;">${SEGMENTS[k].label}</span></td>
+        <td>${d.sawPreview.toLocaleString()}</td>
+        <td>${d.clickedPublish.toLocaleString()}</td>
+        <td class="pct">${rate.toFixed(1)}%</td>
+        <td class="${lift >= 0 ? 'pct' : 'pct-low'}">${liftStr}</td>
+      `;
+      publishTableBody.appendChild(tr);
+    });
+    // Overall row
+    const overallTr = document.createElement('tr');
+    overallTr.style.borderTop = '2px solid #475569';
+    overallTr.innerHTML = `
+      <td style="color:#f8fafc; font-weight:700;">Overall</td>
+      <td style="font-weight:600; color:#f8fafc;">${totalUsers.toLocaleString()}</td>
+      <td style="font-weight:600; color:#f8fafc;">${totalPublish.toLocaleString()}</td>
+      <td style="font-weight:600; color:#f8fafc;">${overallPublishRate.toFixed(1)}%</td>
+      <td>—</td>
+    `;
+    publishTableBody.appendChild(overallTr);
+
+    // =========================================================================
+    //  5. 2ND PROMPT RATE BY SEGMENT (bar chart)
+    // =========================================================================
+    const secondPromptRates = segKeys.map(k => {
+      const d = SECOND_PROMPT_DATA[k];
+      return d.total ? ((d.sent2nd / d.total) * 100) : 0;
+    });
+
+    new Chart(document.getElementById('secondPromptRateChart'), {
+      type: 'bar',
+      data: {
+        labels: segKeys.map(k => SEGMENTS[k].label),
+        datasets: [{
+          label: '2nd Prompt Rate (%)',
+          data: secondPromptRates.map(v => +v.toFixed(1)),
+          backgroundColor: segKeys.map(k => SEGMENTS[k].color),
+          borderColor: segKeys.map(k => SEGMENTS[k].borderColor),
+          borderWidth: 1,
+          borderRadius: 4,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx => ctx.parsed.y.toFixed(1) + '%' } },
+          datalabels: {
+            anchor: 'end', align: 'top', color: '#f8fafc', font: { weight: 700, size: 13 },
+            formatter: v => v.toFixed(1) + '%'
+          }
+        },
+        scales: {
+          y: { min: 0, max: 55, grid: { color: 'rgba(148,163,184,0.12)' }, ticks: { callback: v => v + '%' } },
+          x: { grid: { display: false } }
+        }
+      },
+      plugins: [ChartDataLabels]
+    });
+
+    // =========================================================================
+    //  6. PUBLISH RATE: WITH vs WITHOUT 2ND PROMPT (grouped bar)
+    // =========================================================================
+    new Chart(document.getElementById('publishBy2ndPromptChart'), {
+      type: 'bar',
+      data: {
+        labels: segKeys.map(k => SEGMENTS[k].label),
+        datasets: [
+          {
+            label: '1 prompt only',
+            data: segKeys.map(k => SECOND_PROMPT_DATA[k].publishRate1Prompt),
+            backgroundColor: segKeys.map(k => SEGMENTS[k].color + '55'),
+            borderColor: segKeys.map(k => SEGMENTS[k].color),
+            borderWidth: 2,
+            borderRadius: 4,
+          },
+          {
+            label: '2+ prompts',
+            data: segKeys.map(k => SECOND_PROMPT_DATA[k].publishRate2Plus),
+            backgroundColor: segKeys.map(k => SEGMENTS[k].color),
+            borderColor: segKeys.map(k => SEGMENTS[k].borderColor),
+            borderWidth: 1,
+            borderRadius: 4,
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'circle', padding: 16 } },
+          tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(1) + '%' } },
+          datalabels: {
+            anchor: 'end', align: 'top', color: '#f8fafc', font: { weight: 600, size: 11 },
+            formatter: v => v.toFixed(1) + '%'
+          }
+        },
+        scales: {
+          y: { min: 0, max: 80, grid: { color: 'rgba(148,163,184,0.12)' }, ticks: { callback: v => v + '%' }, title: { display: true, text: 'Publish Rate (%)', color: '#64748b' } },
+          x: { grid: { display: false } }
+        }
+      },
+      plugins: [ChartDataLabels]
+    });
+
+    // =========================================================================
+    //  7. 2ND PROMPT DETAIL TABLE
+    // =========================================================================
+    const detailBody = document.getElementById('secondPromptDetailTable');
+    segKeys.forEach(k => {
+      const d = SECOND_PROMPT_DATA[k];
+      const rate2nd = d.total ? ((d.sent2nd / d.total) * 100).toFixed(1) : '—';
+      const lift = (d.publishRate2Plus - d.publishRate1Prompt).toFixed(1);
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><span style="color:${SEGMENTS[k].color}; font-weight:600;">${SEGMENTS[k].label}</span></td>
+        <td>${d.total.toLocaleString()}</td>
+        <td>${d.sent2nd.toLocaleString()}</td>
+        <td class="pct">${rate2nd}%</td>
+        <td>${d.publishRate1Prompt}%</td>
+        <td class="pct">${d.publishRate2Plus}%</td>
+        <td class="pct" style="font-weight:700;">+${lift}pp</td>
+      `;
+      detailBody.appendChild(tr);
+    });
+
+    // =========================================================================
+    //  8. MATRIX: Segment × Prompt Count → Publish Rate
+    // =========================================================================
+    const matrixData = {
+      'Discuss Mode':  { '1 prompt': 22.4, '2 prompts': 35.1, '3 prompts': 40.8, '4+': 49.2 },
+      'Prompt Only':   { '1 prompt': 29.8, '2 prompts': 46.3, '3 prompts': 53.1, '4+': 60.7 },
+      'Used Template': { '1 prompt': 47.2, '2 prompts': 58.4, '3 prompts': 63.5, '4+': 71.2 },
+    };
+    const promptBuckets = ['1 prompt', '2 prompts', '3 prompts', '4+'];
+    const segLabels = ['Discuss Mode', 'Prompt Only', 'Used Template'];
+    const segColorMap = { 'Discuss Mode': '#8b5cf6', 'Prompt Only': '#3b82f6', 'Used Template': '#10b981' };
+
+    function heatColor(val) {
+      if (val >= 60) return 'rgba(16,185,129,0.35)';
+      if (val >= 45) return 'rgba(16,185,129,0.2)';
+      if (val >= 35) return 'rgba(59,130,246,0.2)';
+      return 'rgba(148,163,184,0.1)';
+    }
+
+    const matrixContainer = document.getElementById('matrixContainer');
+    let html = '<table><thead><tr><th style="text-align:left;">Segment</th>';
+    promptBuckets.forEach(b => { html += `<th>${b}</th>`; });
+    html += '</tr></thead><tbody>';
+    segLabels.forEach(seg => {
+      html += `<tr><td style="font-weight:600; color:${segColorMap[seg]}">${seg}</td>`;
+      promptBuckets.forEach(b => {
+        const v = matrixData[seg][b];
+        html += `<td style="background:${heatColor(v)}; font-weight:600; color:#f8fafc;">${v}%</td>`;
+      });
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+    matrixContainer.innerHTML = html;
+  </script>
+</body>
+</html>

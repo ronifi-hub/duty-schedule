@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vibe → Trial Starts (Account Level)</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+    h1 { font-size: 1.6rem; font-weight: 700; color: #f8fafc; margin-bottom: 0.25rem; }
+    .subtitle { font-size: 0.875rem; color: #94a3b8; margin-bottom: 0.5rem; line-height: 1.6; }
+    .last-updated { font-size: 0.75rem; color: #64748b; margin-bottom: 2rem; }
+
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+      max-width: 1400px;
+    }
+    .kpi-card {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 1.25rem;
+      border-left: 4px solid;
+    }
+    .kpi-card .label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+    .kpi-card .value { font-size: 1.75rem; font-weight: 700; }
+    .kpi-card .delta { font-size: 0.75rem; margin-top: 0.25rem; }
+    .kpi-card .delta.up { color: #34d399; }
+    .kpi-card .delta.down { color: #f87171; }
+
+    .charts { display: grid; gap: 2rem; max-width: 1400px; }
+    .chart-card {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
+    }
+    .chart-card h2 { font-size: 1rem; font-weight: 600; margin: 0 0 0.25rem; color: #cbd5e1; }
+    .chart-card .chart-sub { font-size: 0.75rem; color: #64748b; margin-bottom: 1rem; }
+    .chart-container { position: relative; height: 380px; }
+    .chart-container.tall { height: 440px; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+    @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    .legend-inline {
+      display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem;
+      font-size: 0.8125rem; color: #94a3b8;
+    }
+    .legend-inline span { display: inline-flex; align-items: center; gap: 0.35rem; }
+    .legend-inline .dot { width: 10px; height: 10px; border-radius: 50%; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; margin-top: 1rem; }
+    th, td { padding: 0.5rem 0.75rem; text-align: right; border-bottom: 1px solid #334155; }
+    th { color: #94a3b8; font-weight: 500; position: sticky; top: 0; background: #1e293b; }
+    th:first-child, td:first-child { text-align: left; }
+    td:first-child { font-weight: 500; color: #cbd5e1; }
+    .table-scroll { max-height: 400px; overflow-y: auto; }
+
+    .segment-filter {
+      display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;
+    }
+    .segment-filter button {
+      background: #334155; border: 1px solid #475569; color: #cbd5e1;
+      padding: 0.4rem 0.85rem; border-radius: 6px; font-size: 0.8125rem;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .segment-filter button.active { background: #3b82f6; border-color: #3b82f6; color: #fff; }
+    .segment-filter button:hover { border-color: #60a5fa; }
+
+    .section-divider {
+      margin: 2.5rem 0 1.5rem;
+      padding-top: 2rem;
+      border-top: 1px solid #334155;
+      max-width: 1400px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Vibe → Starting Trial (Account Level)</h1>
+  <p class="subtitle">
+    Account-level tracking of Vibe users who started a trial. <strong>Excludes monday.com internal accounts.</strong><br>
+    Segments: <strong>Touch Wire (Free Trial)</strong> · <strong>Touch CC (Autopurchase)</strong> · <strong>No Touch (Autopurchase)</strong>.<br>
+    Note: Touch Wire (Free Trial) shows <strong>0 accounts in Feb 2026</strong> — all trial starts are Autopurchase.<br>
+    Data starts <strong>February 1, 2026</strong>. Updates daily.
+    Source: BigBrain &middot; Query: <code>vibe_trial_starts_account_level.sql</code>
+  </p>
+  <p class="last-updated" id="lastUpdated">Last updated: —</p>
+
+  <div class="kpi-row" id="kpiRow"></div>
+
+  <div class="charts">
+    <!-- Daily trial starts stacked bar -->
+    <div class="chart-card">
+      <h2>Daily Trial Starts by Segment</h2>
+      <p class="chart-sub">Stacked bar: accounts starting trial per day, broken down by segment</p>
+      <div class="segment-filter" id="filterBar"></div>
+      <div class="chart-container tall">
+        <canvas id="dailyTrialChart"></canvas>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <!-- Cumulative trial starts -->
+      <div class="chart-card">
+        <h2>Cumulative Trial Starts</h2>
+        <p class="chart-sub">Running total of accounts starting trial since Feb 1</p>
+        <div class="chart-container">
+          <canvas id="cumulativeChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Conversion rate over time -->
+      <div class="chart-card">
+        <h2>Daily Conversion Rate: Vibe → Trial Start</h2>
+        <p class="chart-sub">% of accounts using Vibe that started a trial (7-day rolling avg)</p>
+        <div class="chart-container">
+          <canvas id="cvrChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Conversion rate by segment (bar) -->
+    <div class="chart-card">
+      <h2>Overall Conversion Rate by Segment (Feb 1 – Today)</h2>
+      <p class="chart-sub">Accounts starting trial / Accounts using Vibe, per segment</p>
+      <div class="chart-container" style="height: 280px;">
+        <canvas id="segmentCvrChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Breakdown: Touch/No Touch donut + Free/Auto donut -->
+    <div class="grid-2">
+      <div class="chart-card">
+        <h2>Trial Starts: Touch (Wire + CC) vs No Touch</h2>
+        <p class="chart-sub">Share of total trial-starting accounts (excl. monday accounts)</p>
+        <div class="chart-container" style="height: 280px;">
+          <canvas id="touchDonut"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h2>Trial Method: Wire (Free Trial) vs CC (Autopurchase)</h2>
+        <p class="chart-sub">Share of total trial-starting accounts (excl. monday accounts)</p>
+        <div class="chart-container" style="height: 280px;">
+          <canvas id="trialTypeDonut"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detailed data table -->
+    <div class="section-divider">
+      <h1 style="font-size: 1.25rem;">Daily Breakdown Table</h1>
+      <p class="subtitle" style="margin-bottom: 0;">Scroll to see all days. Sortable columns coming soon.</p>
+    </div>
+    <div class="chart-card">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Touch Wire<br>Free Trial</th>
+              <th>Touch CC<br>Autopurchase</th>
+              <th>No Touch<br>Autopurchase</th>
+              <th>Total<br>Trials</th>
+              <th>Vibe<br>Accounts</th>
+              <th>CVR %</th>
+            </tr>
+          </thead>
+          <tbody id="dataTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SQL reference -->
+    <div class="chart-card" style="max-width: 900px; margin-top: 1rem;">
+      <h2>SQL Query Reference</h2>
+      <p class="chart-sub">Replace the DATA object below with results from this BigBrain query</p>
+      <pre style="background:#0f172a; border-radius:8px; padding:1rem; font-size:0.75rem; color:#94a3b8; overflow-x:auto; white-space:pre-wrap; line-height:1.5;">
+-- vibe_trial_starts_account_level.sql
+-- Run daily. Replace DATA in the HTML with query results.
+-- Excludes monday.com internal accounts.
+-- 3 segments: Touch Wire (Free Trial), Touch CC (Autopurchase), No Touch (Autopurchase)
+
+SELECT
+  dt,
+  segment,             -- 'Touch Wire', 'Touch CC', or 'No Touch'
+  trial_method,        -- 'Free Trial' or 'Autopurchase'
+  COUNT(DISTINCT account_id) AS trial_starts,
+  vibe_accounts,
+  ROUND(100.0 * COUNT(DISTINCT account_id) / NULLIF(vibe_accounts, 0), 2) AS cvr_pct
+FROM (
+  SELECT
+    DATE(t.created_at) AS dt,
+    t.account_id,
+    CASE
+      WHEN t.is_touch = 1 AND t.trial_type != 'autopurchase' THEN 'Touch Wire'
+      WHEN t.is_touch = 1 AND t.trial_type = 'autopurchase'  THEN 'Touch CC'
+      ELSE 'No Touch'
+    END AS segment,
+    CASE WHEN t.trial_type = 'autopurchase' THEN 'Autopurchase' ELSE 'Free Trial' END AS trial_method
+  FROM bigbrain.final.trial_starts t
+  LEFT JOIN bigbrain.final.daccounts a ON t.account_id = a.account_id
+  WHERE t.product = 'vibe'
+    AND t.created_at >= '2025-02-01'
+    AND (a.is_monday_account = 0 OR a.is_monday_account IS NULL)  -- exclude monday accounts
+    AND NOT (t.is_touch = 0 AND t.trial_type != 'autopurchase')   -- no free trial for no-touch
+) trials
+LEFT JOIN (
+  SELECT DATE(event_time) AS dt, COUNT(DISTINCT v.account_id) AS vibe_accounts
+  FROM bigbrain.final.vibe_events v
+  LEFT JOIN bigbrain.final.daccounts a ON v.account_id = a.account_id
+  WHERE v.event_time >= '2025-02-01'
+    AND (a.is_monday_account = 0 OR a.is_monday_account IS NULL)  -- exclude monday accounts
+  GROUP BY 1
+) vibe USING (dt)
+GROUP BY dt, segment, trial_method, vibe_accounts
+ORDER BY dt, segment;
+      </pre>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    //  DATA — Replace this block daily with fresh BigBrain query results.
+    //  Structure: array of { date, touch_free, touch_auto, notouch_auto, vibe_accounts }
+    //  Excludes monday.com internal accounts.
+    //  3 segments: Touch Wire (Free Trial), Touch CC (Autopurchase), No Touch (Autopurchase).
+    // =========================================================================
+    // REAL DATA from BigBrain — queried 2026-02-22.
+    // Events: add_ons_trial_started (autopurchase), ai_app_start_free_trial_success (free trial)
+    // kind = 10596861 (vibe app). Excludes IS_TEST_ACCOUNT = 1.
+    // Vibe accounts = distinct accounts with ai_app_user_prompt_received / deployment_succeeded / prompt_first_type / surface_button_clicked.
+    const DATA = [
+      { date: '2026-02-01', touch_free: 0, touch_auto: 3,  notouch_auto: 5,  vibe_accounts: 26694 },
+      { date: '2026-02-02', touch_free: 0, touch_auto: 16, notouch_auto: 20, vibe_accounts: 99673 },
+      { date: '2026-02-03', touch_free: 0, touch_auto: 16, notouch_auto: 28, vibe_accounts: 101128 },
+      { date: '2026-02-04', touch_free: 0, touch_auto: 20, notouch_auto: 17, vibe_accounts: 99156 },
+      { date: '2026-02-05', touch_free: 0, touch_auto: 21, notouch_auto: 10, vibe_accounts: 96561 },
+      { date: '2026-02-06', touch_free: 0, touch_auto: 24, notouch_auto: 23, vibe_accounts: 87271 },
+      { date: '2026-02-07', touch_free: 0, touch_auto: 3,  notouch_auto: 8,  vibe_accounts: 23811 },
+      { date: '2026-02-08', touch_free: 0, touch_auto: 6,  notouch_auto: 5,  vibe_accounts: 25933 },
+      { date: '2026-02-09', touch_free: 0, touch_auto: 17, notouch_auto: 22, vibe_accounts: 101043 },
+      { date: '2026-02-10', touch_free: 0, touch_auto: 16, notouch_auto: 25, vibe_accounts: 100572 },
+      { date: '2026-02-11', touch_free: 0, touch_auto: 25, notouch_auto: 25, vibe_accounts: 98668 },
+      { date: '2026-02-12', touch_free: 0, touch_auto: 21, notouch_auto: 34, vibe_accounts: 96619 },
+      { date: '2026-02-13', touch_free: 0, touch_auto: 19, notouch_auto: 25, vibe_accounts: 85610 },
+      { date: '2026-02-14', touch_free: 0, touch_auto: 2,  notouch_auto: 6,  vibe_accounts: 21857 },
+      { date: '2026-02-15', touch_free: 0, touch_auto: 5,  notouch_auto: 10, vibe_accounts: 24339 },
+      { date: '2026-02-16', touch_free: 0, touch_auto: 10, notouch_auto: 17, vibe_accounts: 85351 },
+      { date: '2026-02-17', touch_free: 0, touch_auto: 21, notouch_auto: 31, vibe_accounts: 94612 },
+      { date: '2026-02-18', touch_free: 0, touch_auto: 28, notouch_auto: 30, vibe_accounts: 96475 },
+      { date: '2026-02-19', touch_free: 0, touch_auto: 23, notouch_auto: 37, vibe_accounts: 95792 },
+      { date: '2026-02-20', touch_free: 0, touch_auto: 15, notouch_auto: 29, vibe_accounts: 85506 },
+      { date: '2026-02-21', touch_free: 0, touch_auto: 2,  notouch_auto: 12, vibe_accounts: 23023 },
+      { date: '2026-02-22', touch_free: 0, touch_auto: 2,  notouch_auto: 1,  vibe_accounts: 9199 },
+    ];
+
+    // =========================================================================
+    //  COLORS & SEGMENT CONFIG
+    // =========================================================================
+    const SEGMENTS = {
+      touch_free:    { label: 'Touch Wire — Free Trial',      color: '#3b82f6', borderColor: '#60a5fa' },
+      touch_auto:    { label: 'Touch CC — Autopurchase',      color: '#8b5cf6', borderColor: '#a78bfa' },
+      notouch_auto:  { label: 'No Touch — Autopurchase',      color: '#f59e0b', borderColor: '#fbbf24' },
+    };
+    const SEG_KEYS = Object.keys(SEGMENTS);
+    const TOUCH_COLOR = '#6366f1';
+    const NO_TOUCH_COLOR = '#14b8a6';
+    const FREE_COLOR = '#3b82f6';
+    const AUTO_COLOR = '#f59e0b';
+
+    // =========================================================================
+    //  HELPERS
+    // =========================================================================
+    const fmt = (d) => {
+      const parts = d.split('-');
+      return parts[1] + '/' + parts[2];
+    };
+
+    const sum = (arr, key) => arr.reduce((s, r) => s + (r[key] || 0), 0);
+    const totalTrials = (r) => r.touch_free + r.touch_auto + r.notouch_auto;
+
+    function rollingAvg(arr, windowSize) {
+      return arr.map((_, i) => {
+        const start = Math.max(0, i - windowSize + 1);
+        const slice = arr.slice(start, i + 1);
+        return slice.reduce((a, b) => a + b, 0) / slice.length;
+      });
+    }
+
+    // =========================================================================
+    //  LAST UPDATED
+    // =========================================================================
+    const lastDate = DATA[DATA.length - 1].date;
+    document.getElementById('lastUpdated').textContent = `Last updated: ${lastDate} (${DATA.length} days of data)`;
+
+    // =========================================================================
+    //  KPI CARDS
+    // =========================================================================
+    const totalAll = DATA.reduce((s, r) => s + totalTrials(r), 0);
+    const totalTouch = sum(DATA, 'touch_free') + sum(DATA, 'touch_auto');
+    const totalNoTouch = sum(DATA, 'notouch_auto');
+    const totalFree = sum(DATA, 'touch_free');
+    const totalAuto = sum(DATA, 'touch_auto') + sum(DATA, 'notouch_auto');
+    const totalVibe = sum(DATA, 'vibe_accounts');
+    const overallCvr = totalVibe ? ((totalAll / totalVibe) * 100).toFixed(1) : '—';
+
+    const last7 = DATA.slice(-7);
+    const last7Trials = last7.reduce((s, r) => s + totalTrials(r), 0);
+    const prev7 = DATA.slice(-14, -7);
+    const prev7Trials = prev7.reduce((s, r) => s + totalTrials(r), 0);
+    const weekDelta = prev7Trials ? (((last7Trials - prev7Trials) / prev7Trials) * 100).toFixed(1) : '—';
+
+    const kpis = [
+      { label: 'Total Trial Starts', value: totalAll.toLocaleString(), border: '#3b82f6', delta: `Last 7d: ${last7Trials.toLocaleString()}`, deltaClass: '' },
+      { label: 'Overall CVR (Vibe → Trial)', value: overallCvr + '%', border: '#10b981', delta: `${totalAll.toLocaleString()} / ${totalVibe.toLocaleString()} vibe accounts`, deltaClass: '' },
+      { label: 'Touch Wire (Free Trial)', value: totalFree.toLocaleString(), border: '#3b82f6', delta: `${((totalFree / totalAll) * 100).toFixed(1)}% of total`, deltaClass: '' },
+      { label: 'Touch CC (Autopurchase)', value: sum(DATA, 'touch_auto').toLocaleString(), border: '#8b5cf6', delta: `${((sum(DATA, 'touch_auto') / totalAll) * 100).toFixed(1)}% of total`, deltaClass: '' },
+      { label: 'No Touch (Autopurchase)', value: totalNoTouch.toLocaleString(), border: '#f59e0b', delta: `${((totalNoTouch / totalAll) * 100).toFixed(1)}% of total`, deltaClass: '' },
+      { label: 'WoW Change (7d)', value: (weekDelta > 0 ? '+' : '') + weekDelta + '%', border: weekDelta >= 0 ? '#34d399' : '#f87171', delta: `${last7Trials} vs ${prev7Trials} prior week`, deltaClass: weekDelta >= 0 ? 'up' : 'down' },
+    ];
+
+    const kpiRow = document.getElementById('kpiRow');
+    kpis.forEach(k => {
+      const card = document.createElement('div');
+      card.className = 'kpi-card';
+      card.style.borderLeftColor = k.border;
+      card.innerHTML = `
+        <div class="label">${k.label}</div>
+        <div class="value" style="color:${k.border}">${k.value}</div>
+        <div class="delta ${k.deltaClass}">${k.delta}</div>
+      `;
+      kpiRow.appendChild(card);
+    });
+
+    // =========================================================================
+    //  CHART DEFAULTS
+    // =========================================================================
+    Chart.defaults.color = '#94a3b8';
+    Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
+    Chart.defaults.font.size = 11;
+
+    const labels = DATA.map(d => fmt(d.date));
+
+    // =========================================================================
+    //  1. DAILY TRIAL STARTS (stacked bar)
+    // =========================================================================
+    const dailyCtx = document.getElementById('dailyTrialChart');
+    const dailyChart = new Chart(dailyCtx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: SEG_KEYS.map(key => ({
+          label: SEGMENTS[key].label,
+          data: DATA.map(d => d[key]),
+          backgroundColor: SEGMENTS[key].color,
+          borderColor: SEGMENTS[key].borderColor,
+          borderWidth: 1,
+          borderRadius: 2,
+        }))
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'circle', padding: 16 } },
+          tooltip: {
+            callbacks: {
+              footer: (items) => {
+                const total = items.reduce((s, i) => s + i.parsed.y, 0);
+                return `Total: ${total}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: { stacked: true, grid: { color: 'rgba(148,163,184,0.08)' } },
+          y: { stacked: true, grid: { color: 'rgba(148,163,184,0.12)' }, title: { display: true, text: 'Accounts', color: '#64748b' } }
+        }
+      }
+    });
+
+    // =========================================================================
+    //  2. CUMULATIVE TRIAL STARTS (line)
+    // =========================================================================
+    function buildCumulative(key) {
+      let cum = 0;
+      return DATA.map(d => { cum += d[key]; return cum; });
+    }
+    new Chart(document.getElementById('cumulativeChart'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: SEG_KEYS.map(key => ({
+          label: SEGMENTS[key].label,
+          data: buildCumulative(key),
+          borderColor: SEGMENTS[key].color,
+          backgroundColor: SEGMENTS[key].color + '22',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 0,
+          borderWidth: 2,
+        }))
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'circle', padding: 12, font: { size: 10 } } },
+        },
+        scales: {
+          x: { grid: { color: 'rgba(148,163,184,0.08)' } },
+          y: { grid: { color: 'rgba(148,163,184,0.12)' }, title: { display: true, text: 'Cumulative Accounts', color: '#64748b' } }
+        }
+      }
+    });
+
+    // =========================================================================
+    //  3. DAILY CVR (7-day rolling average, line)
+    // =========================================================================
+    const dailyCvrAll = DATA.map(d => d.vibe_accounts ? (totalTrials(d) / d.vibe_accounts) * 100 : 0);
+    const dailyCvrTouchWire = DATA.map(d => d.vibe_accounts ? (d.touch_free / d.vibe_accounts) * 100 : 0);
+    const dailyCvrTouchCC = DATA.map(d => d.vibe_accounts ? (d.touch_auto / d.vibe_accounts) * 100 : 0);
+    const dailyCvrNoTouch = DATA.map(d => d.vibe_accounts ? (d.notouch_auto / d.vibe_accounts) * 100 : 0);
+
+    new Chart(document.getElementById('cvrChart'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          { label: 'Overall CVR', data: rollingAvg(dailyCvrAll, 7), borderColor: '#f8fafc', backgroundColor: '#f8fafc22', borderWidth: 2.5, tension: 0.3, pointRadius: 0 },
+          { label: 'Touch Wire CVR', data: rollingAvg(dailyCvrTouchWire, 7), borderColor: '#3b82f6', borderWidth: 1.5, borderDash: [5, 3], tension: 0.3, pointRadius: 0 },
+          { label: 'Touch CC CVR', data: rollingAvg(dailyCvrTouchCC, 7), borderColor: '#8b5cf6', borderWidth: 1.5, borderDash: [5, 3], tension: 0.3, pointRadius: 0 },
+          { label: 'No Touch CVR', data: rollingAvg(dailyCvrNoTouch, 7), borderColor: '#f59e0b', borderWidth: 1.5, borderDash: [2, 2], tension: 0.3, pointRadius: 0 },
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'top', labels: { usePointStyle: true, pointStyle: 'circle', padding: 12, font: { size: 10 } } },
+          tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(2)}%` } }
+        },
+        scales: {
+          x: { grid: { color: 'rgba(148,163,184,0.08)' } },
+          y: { grid: { color: 'rgba(148,163,184,0.12)' }, title: { display: true, text: 'CVR %', color: '#64748b' }, ticks: { callback: v => v.toFixed(1) + '%' } }
+        }
+      }
+    });
+
+    // =========================================================================
+    //  4. SEGMENT CVR BAR
+    // =========================================================================
+    const segCvrData = SEG_KEYS.map(key => {
+      const trials = sum(DATA, key);
+      return totalVibe ? ((trials / totalVibe) * 100) : 0;
+    });
+    new Chart(document.getElementById('segmentCvrChart'), {
+      type: 'bar',
+      data: {
+        labels: SEG_KEYS.map(k => SEGMENTS[k].label),
+        datasets: [{
+          data: segCvrData,
+          backgroundColor: SEG_KEYS.map(k => SEGMENTS[k].color),
+          borderColor: SEG_KEYS.map(k => SEGMENTS[k].borderColor),
+          borderWidth: 1,
+          borderRadius: 4,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: (ctx) => ctx.parsed.y.toFixed(2) + '%' } }
+        },
+        scales: {
+          x: { grid: { display: false } },
+          y: { grid: { color: 'rgba(148,163,184,0.12)' }, ticks: { callback: v => v.toFixed(1) + '%' }, title: { display: true, text: 'CVR %', color: '#64748b' } }
+        }
+      }
+    });
+
+    // =========================================================================
+    //  5. DONUT: Touch vs No Touch
+    // =========================================================================
+    new Chart(document.getElementById('touchDonut'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Touch', 'No Touch'],
+        datasets: [{
+          data: [totalTouch, totalNoTouch],
+          backgroundColor: [TOUCH_COLOR, NO_TOUCH_COLOR],
+          borderColor: '#1e293b',
+          borderWidth: 3,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '60%',
+        plugins: {
+          legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, pointStyle: 'circle' } },
+          tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.parsed.toLocaleString()} (${((ctx.parsed / totalAll) * 100).toFixed(1)}%)` } }
+        }
+      }
+    });
+
+    // =========================================================================
+    //  6. DONUT: Free Trial vs Autopurchase
+    // =========================================================================
+    new Chart(document.getElementById('trialTypeDonut'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Wire (Free Trial)', 'CC (Autopurchase)'],
+        datasets: [{
+          data: [totalFree, totalAuto],
+          backgroundColor: [FREE_COLOR, AUTO_COLOR],
+          borderColor: '#1e293b',
+          borderWidth: 3,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '60%',
+        plugins: {
+          legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, pointStyle: 'circle' } },
+          tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.parsed.toLocaleString()} (${((ctx.parsed / totalAll) * 100).toFixed(1)}%)` } }
+        }
+      }
+    });
+
+    // =========================================================================
+    //  7. DATA TABLE
+    // =========================================================================
+    const tbody = document.getElementById('dataTableBody');
+    [...DATA].reverse().forEach(row => {
+      const total = totalTrials(row);
+      const cvr = row.vibe_accounts ? ((total / row.vibe_accounts) * 100).toFixed(1) : '—';
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${row.date}</td>
+        <td>${row.touch_free}</td>
+        <td>${row.touch_auto}</td>
+        <td>${row.notouch_auto}</td>
+        <td style="font-weight:600; color:#f8fafc">${total}</td>
+        <td>${row.vibe_accounts.toLocaleString()}</td>
+        <td style="color:${parseFloat(cvr) > 12 ? '#34d399' : '#f8fafc'}">${cvr}%</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // =========================================================================
+    //  FILTER BUTTONS (toggle segments on the stacked bar)
+    // =========================================================================
+    const filterBar = document.getElementById('filterBar');
+    const allBtn = document.createElement('button');
+    allBtn.textContent = 'All Segments';
+    allBtn.className = 'active';
+    allBtn.onclick = () => {
+      dailyChart.data.datasets.forEach(ds => { ds.hidden = false; });
+      dailyChart.update();
+      filterBar.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      allBtn.classList.add('active');
+    };
+    filterBar.appendChild(allBtn);
+
+    ['Touch Wire', 'Touch CC', 'No Touch'].forEach((lbl, i) => {
+      const btn = document.createElement('button');
+      btn.textContent = lbl;
+      btn.onclick = () => {
+        const showMap = {
+          0: [true, false, false],  // Touch Wire only
+          1: [false, true, false],  // Touch CC only
+          2: [false, false, true],  // No Touch only
+        };
+        dailyChart.data.datasets.forEach((ds, j) => { ds.hidden = !showMap[i][j]; });
+        dailyChart.update();
+        filterBar.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      };
+      filterBar.appendChild(btn);
+    });
+  </script>
+</body>
+</html>

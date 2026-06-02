@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tip seen — funnel</title>
+  <style>
+    :root {
+      --bg: #0f111a;
+      --card: #16182a;
+      --text: #f4f4f7;
+      --muted: #9ca3af;
+      --border: #2a2d42;
+      --amber: #f5a623;
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .frame {
+      width: 100%;
+      max-width: 1120px;
+      aspect-ratio: 16 / 9;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.35);
+    }
+    .funnel-viz {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      width: 100%;
+      max-width: 320px;
+    }
+    .fseg {
+      height: 56px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.2;
+      text-align: center;
+      padding: 0 10px;
+      clip-path: polygon(4% 0, 96% 0, 88% 100%, 12% 100%);
+    }
+    .fseg .n {
+      font-size: 11px;
+      font-weight: 600;
+      opacity: 0.9;
+      font-variant-numeric: tabular-nums;
+    }
+    .fseg .pct {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--amber);
+      font-variant-numeric: tabular-nums;
+    }
+    .fseg.s1 {
+      width: 100%;
+      background: linear-gradient(165deg, #7c7cff, #5252d8);
+    }
+    .fseg.s2 {
+      background: linear-gradient(165deg, #5a5ad4, #3f3fa8);
+    }
+    .fseg.s3 {
+      background: linear-gradient(165deg, #4545a8, #2e2e78);
+    }
+    code {
+      font-size: 10px;
+      font-weight: 600;
+      color: #d4d4f0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Redash: extend sql-ai-credits-free-grant-funnel-redash.sql with cohort from on_show if needed -->
+  <div class="frame">
+    <div class="funnel-viz" aria-label="Funnel from tip seen">
+      <!-- Edit counts / widths after Redash; widths = % of step 1 -->
+      <div class="fseg s1" style="width: 100%">
+        <span>1 · Tip seen</span>
+        <code>ai_credits_free_grant_on_show</code>
+        <span class="n">12,400</span>
+        <span class="pct">100%</span>
+      </div>
+      <div class="fseg s2" style="width: 58%">
+        <span>2 · Grant completed</span>
+        <code>ai_credits_free_grant_on_done</code>
+        <span class="n">7,190</span>
+        <span class="pct">58%</span>
+      </div>
+      <div class="fseg s3" style="width: 36%">
+        <span>3 · Credits consumed</span>
+        <span class="n">4,460</span>
+        <span class="pct">36%</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

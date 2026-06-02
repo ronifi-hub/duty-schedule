@@ -1,0 +1,20 @@
+---
+description: Personal OS structure and conventions for this workspace
+alwaysApply: true
+---
+
+# Personal OS Workspace
+
+## Structure
+- `Knowledge/Roni's GOALS.md` — PM goals and personal roadmap
+- `Knowledge/Roni's AGENT.md` — AI assistant instructions and preferences
+- `Knowledge/Tasks/` — Active task files (PRDs, workflows, pipelines)
+- `Knowledge/model-selection-guide.md` — Guide for choosing AI models
+
+## Conventions
+- Always check GOALS.md before suggesting priorities
+- Tasks in Knowledge/Tasks/ are the active backlog — reference them by name
+- **PRDs:** Use only `.cursor/skills/prd-writing/SKILL.md` — no other PRD templates, commands, or skills
+- Use PLG and growth frameworks relevant to monday.com
+- Ronnie is a PM at monday.com working on AI products (Vibe, Sidekick, Agents)
+- When creating new files, place them in the appropriate Knowledge/ subfolder

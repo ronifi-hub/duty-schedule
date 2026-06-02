@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vibe Click Publish — User-level answers (Admins)</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+    h1 { font-size: 1.5rem; font-weight: 600; margin: 0 0 0.5rem; color: #f8fafc; }
+    .subtitle { font-size: 0.875rem; color: #94a3b8; margin-bottom: 2rem; line-height: 1.5; }
+    .source-note { font-size: 0.75rem; color: #64748b; margin-top: 0.5rem; }
+    .charts { display: grid; gap: 2rem; max-width: 1100px; }
+    .chart-card {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
+    }
+    .chart-card h2 { font-size: 1rem; font-weight: 600; margin: 0 0 1rem; color: #cbd5e1; }
+    .chart-container { position: relative; height: 300px; }
+    .chart-container.short { height: 220px; }
+    .kpi-row { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+    .kpi { background: #1e293b; border-radius: 10px; padding: 1rem 1.25rem; border-left: 4px solid #3b82f6; min-width: 140px; }
+    .kpi .label { font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.04em; }
+    .kpi .value { font-size: 1.5rem; font-weight: 700; color: #f8fafc; }
+    .kpi.warn { border-left-color: #f59e0b; }
+    .kpi.good { border-left-color: #10b981; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; margin-top: 0.5rem; }
+    th, td { padding: 0.5rem 0.75rem; text-align: right; border-bottom: 1px solid #334155; }
+    th { color: #94a3b8; font-weight: 500; }
+    th:first-child, td:first-child { text-align: left; }
+    td:first-child { font-weight: 500; color: #cbd5e1; }
+    .pct { color: #34d399; }
+    .takeaway {
+      background: #334155;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      font-size: 0.8125rem;
+      color: #cbd5e1;
+      margin-top: 1rem;
+      border-left: 4px solid #3b82f6;
+    }
+    .takeaway strong { color: #f8fafc; }
+    .legend-inline { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 0.75rem; font-size: 0.8125rem; color: #94a3b8; }
+    .legend-inline span { display: inline-flex; align-items: center; gap: 0.35rem; }
+    .legend-inline .dot { width: 10px; height: 10px; border-radius: 50%; }
+  </style>
+</head>
+<body>
+  <h1>Vibe Click Publish — User-level answers (admins only)</h1>
+  <p class="subtitle">
+    Summary of open questions answered from data in this folder. All metrics are <strong>user-level</strong> (distinct pulse_user_id).
+    Sources: <code>user_level_vibe_funnel_admins_only.sql</code> (funnel), <code>vibe_funnel_admins_prompt_effect.html</code> (iterations), <code>vibe_publish_by_interaction_type.html</code> (free-form vs template).
+    Tables: bigbrain.final.events + bigbrain.final.dusers (is_admin = 1).
+  </p>
+
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="label">Prompt → Publish CVR</div>
+      <div class="value">~42.5%</div>
+      <div class="source-note">users who sent prompt and clicked publish</div>
+    </div>
+    <div class="kpi good">
+      <div class="label">Saw preview → Publish</div>
+      <div class="value">~46%</div>
+      <div class="source-note">5,392 / 11,734 users (prompt-effect)</div>
+    </div>
+    <div class="kpi warn">
+      <div class="label">Biggest drop-off</div>
+      <div class="value">Preview → Publish</div>
+      <div class="source-note">~43% of users at preview reach publish</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Avg prompts before publish</div>
+      <div class="value">~2.1</div>
+      <div class="source-note">among publishers (weighted)</div>
+    </div>
+  </div>
+
+  <div class="charts">
+    <div class="chart-card">
+      <h2>User-level funnel (4 steps)</h2>
+      <p class="source-note">Query: user_level_vibe_funnel_admins_only.sql → bigbrain.final.events, bigbrain.final.dusers</p>
+      <div class="chart-container">
+        <canvas id="funnelChart"></canvas>
+      </div>
+      <div class="legend-inline">
+        <span><span class="dot" style="background:#3b82f6"></span> Seeing vibe</span>
+        <span><span class="dot" style="background:#8b5cf6"></span> Prompt sent</span>
+        <span><span class="dot" style="background:#10b981"></span> Preview rendered</span>
+        <span><span class="dot" style="background:#f59e0b"></span> Clicked publish</span>
+      </div>
+      <p class="takeaway"><strong>Main leak:</strong> Preview → Publish (~43%). Seeing→Prompt ~89%; Prompt→Preview ~100%.</p>
+    </div>
+
+    <div class="chart-card">
+      <h2>Step-to-step conversion (%)</h2>
+      <div class="chart-container short">
+        <canvas id="stepCvrChart"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h2>Prompts before first publish (user-level)</h2>
+      <p class="source-note">Source: vibe_funnel_admins_prompt_effect.html (last 30d, admins who saw preview)</p>
+      <div class="chart-container short">
+        <canvas id="promptsChart"></canvas>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Prompts before publish</th><th>Users (saw preview)</th><th>Clicked publish</th><th>Publish rate</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>6,571</td><td>2,641</td><td class="pct">40.2%</td></tr>
+          <tr><td>2</td><td>1,996</td><td>937</td><td class="pct">46.9%</td></tr>
+          <tr><td>3</td><td>931</td><td>499</td><td class="pct">53.6%</td></tr>
+          <tr><td>4+</td><td>2,234</td><td>1,315</td><td class="pct">58.9%</td></tr>
+        </tbody>
+      </table>
+      <p class="takeaway"><strong>Weighted avg ≈ 2.1</strong> prompts per user before first publish (baseline for H1, H4).</p>
+    </div>
+
+    <div class="chart-card">
+      <h2>First interaction: free-form vs template (user-level)</h2>
+      <p class="source-note">Source: vibe_publish_by_interaction_type.html (placeholder; verify with SQL). Non-paying, saw preview.</p>
+      <div class="chart-container short">
+        <canvas id="segmentChart"></canvas>
+      </div>
+      <p class="takeaway"><strong>~64% Prompt Only (free-form), ~22% Template</strong> → H2 (Enhance prompt) is high priority.</p>
+    </div>
+  </div>
+
+  <p class="source-note" style="margin-top: 2rem;">Funnel values in chart: from vibe_funnel_admins.html (placeholder). Replace with Redash results from user_level_vibe_funnel_admins_only.sql for production.</p>
+
+  <script>
+    const steps = ['Seeing vibe', 'Prompt sent', 'Preview rendered', 'Clicked publish'];
+    const funnelValues = [4200, 3743, 3743, 1592];
+    const colors = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b'];
+
+    new Chart(document.getElementById('funnelChart'), {
+      type: 'bar',
+      data: {
+        labels: steps,
+        datasets: [{ label: 'Users', data: funnelValues, backgroundColor: colors, borderColor: colors.map(c => c), borderWidth: 1 }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+        scales: {
+          x: { grid: { color: 'rgba(148,163,184,0.15)' }, ticks: { color: '#94a3b8' } },
+          y: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+        }
+      }
+    });
+
+    const stepCvrLabels = ['Seeing→Prompt', 'Prompt→Preview', 'Preview→Publish'];
+    const stepCvrValues = [
+      funnelValues[1] / funnelValues[0] * 100,
+      funnelValues[2] / funnelValues[1] * 100,
+      funnelValues[3] / funnelValues[2] * 100
+    ];
+    new Chart(document.getElementById('stepCvrChart'), {
+      type: 'bar',
+      data: {
+        labels: stepCvrLabels,
+        datasets: [{
+          label: 'Conversion %',
+          data: stepCvrValues.map(v => Math.round(v * 10) / 10),
+          backgroundColor: ['#3b82f6', '#10b981', '#f59e0b'],
+          borderColor: ['#60a5fa', '#34d399', '#fbbf24'],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.parsed.y + '%' } } },
+        scales: {
+          y: { min: 0, max: 105, grid: { color: 'rgba(148,163,184,0.15)' }, ticks: { color: '#94a3b8', callback: v => v + '%' } },
+          x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+        }
+      }
+    });
+
+    const promptBuckets = ['1', '2', '3', '4+'];
+    const promptUsers = [6571, 1996, 931, 2234];
+    const promptPublish = [2641, 937, 499, 1315];
+    new Chart(document.getElementById('promptsChart'), {
+      type: 'bar',
+      data: {
+        labels: promptBuckets,
+        datasets: [
+          { label: 'Users (saw preview)', data: promptUsers, backgroundColor: 'rgba(59,130,246,0.6)', borderColor: '#3b82f6', borderWidth: 1 },
+          { label: 'Clicked publish', data: promptPublish, backgroundColor: 'rgba(16,185,129,0.8)', borderColor: '#10b981', borderWidth: 1 }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'top' } },
+        scales: {
+          y: { grid: { color: 'rgba(148,163,184,0.15)' }, ticks: { color: '#94a3b8' } },
+          x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+        }
+      }
+    });
+
+    const segmentLabels = ['Prompt Only (free-form)', 'Used Template', 'Discuss first'];
+    const segmentUsers = [4876, 1658, 1148];
+    const segmentColors = ['#3b82f6', '#10b981', '#8b5cf6'];
+    new Chart(document.getElementById('segmentChart'), {
+      type: 'doughnut',
+      data: {
+        labels: segmentLabels,
+        datasets: [{ data: segmentUsers, backgroundColor: segmentColors, borderColor: '#1e293b', borderWidth: 2 }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '55%',
+        plugins: {
+          legend: { position: 'bottom' },
+          tooltip: {
+            callbacks: {
+              label: ctx => {
+                const t = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                const pct = ((ctx.parsed / t) * 100).toFixed(1);
+                return ctx.label + ': ' + ctx.parsed.toLocaleString() + ' (' + pct + '%)';
+              }
+            }
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

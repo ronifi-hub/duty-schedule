@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Agents — Braze email dashboard</title>
+  <style>
+    :root {
+      --primary: #6161ff;
+      --primary-dim: #4b4bcc;
+      --bg: #0f111a;
+      --card: #16182a;
+      --text: #f4f4f7;
+      --muted: #9ca3af;
+      --border: #2a2d42;
+      --green: #00ca72;
+      --amber: #f5a623;
+      --coral: #ff7575;
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px 18px 56px;
+      line-height: 1.45;
+    }
+    .shell {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin: 0 0 6px;
+      letter-spacing: -0.02em;
+    }
+    .lede {
+      font-size: 14px;
+      color: var(--muted);
+      max-width: 640px;
+      margin: 0;
+    }
+    .lede a { color: var(--primary); }
+    .meta {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: flex-end;
+    }
+    .meta label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .meta input[type="text"] {
+      width: 200px;
+      background: #0a0c14;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 8px 10px;
+      font-size: 13px;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    button {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 9px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button.secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    button:hover { opacity: 0.9; }
+    .grid-kpi {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+    }
+    .kpi {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+    }
+    .kpi .k {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .kpi .v {
+      font-size: 22px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+    .kpi .h {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.22);
+    }
+    .panel h2 {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin: 0 0 16px;
+      font-weight: 600;
+    }
+    .two {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 900px) {
+      .two { grid-template-columns: 1fr; }
+    }
+    .inputs-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px 14px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 520px) {
+      .inputs-grid { grid-template-columns: 1fr; }
+    }
+    .field label {
+      display: block;
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .field input[type="number"] {
+      width: 100%;
+      background: #0a0c14;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 10px 12px;
+      font-size: 15px;
+      font-variant-numeric: tabular-nums;
+    }
+    .field input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    .frow {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .frow:last-child { margin-bottom: 0; }
+    .flab {
+      width: 140px;
+      flex-shrink: 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .fbar {
+      flex: 1;
+      height: 32px;
+      background: #0a0c14;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .fbar > div {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #fff;
+      transition: width 0.2s ease;
+    }
+    .b-send { background: linear-gradient(90deg, #4a4a8f, var(--primary)); }
+    .b-del { background: linear-gradient(90deg, #2d5a7a, #3d8fd9); }
+    .b-eng { background: linear-gradient(90deg, #3d6b4a, var(--green)); }
+    .b-clk { background: linear-gradient(90deg, #7a5a2d, var(--amber)); }
+    .fv {
+      width: 52px;
+      text-align: right;
+      font-size: 13px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+    .warn {
+      font-size: 12px;
+      color: var(--coral);
+      margin-top: 10px;
+    }
+    .rates-mini {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .rates-mini .r {
+      background: #0a0c14;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+    .rates-mini .rk { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+    .rates-mini .rv { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; margin-top: 2px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    th {
+      text-align: left;
+      padding: 10px 8px;
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-size: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 8px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    td input[type="text"] {
+      width: 100%;
+      min-width: 200px;
+      background: #0a0c14;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      padding: 8px 10px;
+      font-size: 11px;
+    }
+    td input[type="number"] {
+      width: 72px;
+      background: #0a0c14;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      padding: 8px;
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+    }
+    td.num {
+      font-variant-numeric: tabular-nums;
+      color: var(--muted);
+    }
+    .foot {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 12px;
+      line-height: 1.5;
+    }
+    code { font-size: 11px; color: #c4c4e8; }
+    .banner {
+      background: rgba(97, 97, 255, 0.12);
+      border: 1px solid rgba(97, 97, 255, 0.35);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      font-size: 13px;
+      color: var(--text);
+    }
+    .banner strong { color: var(--primary-light); }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div>
+        <h1>AI Agents — email engagement</h1>
+        <p class="lede">
+          Paste <strong>section A</strong> (overall) and <strong>section B</strong> (by campaign) results from Redash
+          <a href="https://redash.bigbrain.me/queries/142579/source" target="_blank" rel="noopener">query 142579</a>.
+          SQL file: <code>Knowledge/Tasks/sql-ai-agents-email-funnel-braze.sql</code> (admin-named campaigns only in the current <code>IN (...)</code> list).
+        </p>
+      </div>
+      <div class="meta">
+        <label>Notes / last refresh <input type="text" id="note" placeholder="e.g. 2026-05-12 — last 14d" /></label>
+        <div class="actions">
+          <button type="button" id="btnExample">Example data</button>
+          <button type="button" class="secondary" id="btnClear">Clear all</button>
+          <button type="button" class="secondary" id="btnExport">Copy TSV</button>
+        </div>
+      </div>
+    </header>
+
+    <p class="banner" id="demoBanner" role="status">
+      <strong>Sample data is loaded</strong> so you see the layout. Replace with your Redash results, or click <strong>Clear all</strong> to start empty.
+    </p>
+
+    <section class="panel" aria-labelledby="kpi-head">
+      <h2 id="kpi-head">Overall funnel (unique users)</h2>
+      <div class="grid-kpi" id="kpis"></div>
+    </section>
+
+    <div class="two">
+      <section class="panel">
+        <h2>Inputs — overall (section A)</h2>
+        <div class="inputs-grid">
+          <div class="field"><label for="ovSent">users_sent</label><input type="number" id="ovSent" min="0" step="1" value="" /></div>
+          <div class="field"><label for="ovDel">users_delivered</label><input type="number" id="ovDel" min="0" step="1" value="" /></div>
+          <div class="field"><label for="ovEng">users_engaged_open_or_click</label><input type="number" id="ovEng" min="0" step="1" value="" /></div>
+          <div class="field"><label for="ovClk">users_clicked</label><input type="number" id="ovClk" min="0" step="1" value="" /></div>
+        </div>
+        <h2 style="margin-top:8px">Funnel (bar width vs sent)</h2>
+        <div id="funnelBars"></div>
+        <p class="warn" id="ovWarn" hidden></p>
+      </section>
+      <section class="panel">
+        <h2>Rates — overall</h2>
+        <div class="rates-mini" id="ovRates"></div>
+        <p class="foot" style="margin-top:16px">
+          <strong>Engagement vs delivered</strong> = users with open or click ÷ delivered.
+          <strong>CTR</strong> = click ÷ delivered. <strong>CTOR</strong> = click ÷ engaged.
+          Do not sum per-campaign users to compare to overall — the same person can appear in multiple campaigns.
+        </p>
+      </section>
+    </div>
+
+    <section class="panel">
+      <h2>By campaign (section B)</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Campaign</th>
+            <th>Sent</th>
+            <th>Deliv.</th>
+            <th>Engaged</th>
+            <th>Click</th>
+            <th>Eng %</th>
+            <th>CTR</th>
+            <th>CTOR</th>
+          </tr>
+        </thead>
+        <tbody id="campBody"></tbody>
+      </table>
+      <p class="foot">
+        Edit row cells to match Redash. Add rows with <strong>Add campaign</strong> if you switch the SQL <code>IN</code> list back to all eight campaigns.
+      </p>
+      <button type="button" class="secondary" id="btnAddRow">Add campaign row</button>
+    </section>
+  </div>
+
+  <script>
+    const ADMIN_DEFAULTS = [
+      'AI_agents_admins_30K_pro_below_email_body_test_11052026',
+      'AI_agents_admins_above_15_seats_pro_below_email_06052026',
+      'AI_agents_admins_15seats_pro_below_email_06052026'
+    ];
+
+    /** null = empty field (do not treat as zero for display) */
+    function parseInput(el) {
+      const raw = String(el.value ?? '').trim();
+      if (raw === '') return null;
+      const v = parseInt(raw, 10);
+      if (!Number.isFinite(v) || v < 0) return null;
+      return v;
+    }
+
+    function dispInt(n) {
+      return n === null ? '—' : String(n);
+    }
+
+    /** For export / TSV: empty → 0 */
+    function num(el) {
+      const v = parseInput(el);
+      return v === null ? 0 : v;
+    }
+
+    function pct(n, d) {
+      if (!d) return null;
+      return (100 * n) / d;
+    }
+
+    function fmt(x) {
+      if (x == null || Number.isNaN(x)) return '—';
+      return x.toFixed(2) + '%';
+    }
+
+    function fmtInt(x) {
+      if (x == null || Number.isNaN(x)) return '—';
+      return String(Math.round(x));
+    }
+
+    function validateOverall(s, d, e, c) {
+      const w = document.getElementById('ovWarn');
+      if (s === null && d === null && e === null && c === null) {
+        w.hidden = true;
+        w.textContent = '';
+        return;
+      }
+      if (s === null || d === null || e === null || c === null) {
+        w.hidden = false;
+        w.textContent = 'Fill all four overall fields to validate the funnel (or use Example data).';
+        return;
+      }
+      const m = [];
+      if (d > s) m.push('Delivered > sent.');
+      if (e > d) m.push('Engaged > delivered (check delivery events).');
+      if (c > e) m.push('Clicked > engaged.');
+      if (c > d) m.push('Clicked > delivered.');
+      w.hidden = m.length === 0;
+      w.textContent = m.join(' ');
+    }
+
+    function renderOverall() {
+      const s = parseInput(document.getElementById('ovSent'));
+      const d = parseInput(document.getElementById('ovDel'));
+      const e = parseInput(document.getElementById('ovEng'));
+      const c = parseInput(document.getElementById('ovClk'));
+      validateOverall(s, d, e, c);
+
+      const sN = s ?? 0;
+      const dN = d ?? 0;
+      const eN = e ?? 0;
+      const cN = c ?? 0;
+      const base = Math.max(sN, 1);
+      const w = (n) => Math.min(100, (100 * n) / base) + '%';
+      const inBar = (n) => (n === 0 ? '0' : n > 0 ? String(n) : '');
+
+      document.getElementById('funnelBars').innerHTML = `
+        <div class="frow"><span class="flab">Sent</span><div class="fbar"><div class="b-send" style="width:${w(sN)}">${inBar(sN)}</div></div><span class="fv">${dispInt(s)}</span></div>
+        <div class="frow"><span class="flab">Delivered</span><div class="fbar"><div class="b-del" style="width:${w(dN)}">${inBar(dN)}</div></div><span class="fv">${dispInt(d)}</span></div>
+        <div class="frow"><span class="flab">Open / click</span><div class="fbar"><div class="b-eng" style="width:${w(eN)}">${inBar(eN)}</div></div><span class="fv">${dispInt(e)}</span></div>
+        <div class="frow"><span class="flab">Clicked</span><div class="fbar"><div class="b-clk" style="width:${w(cN)}">${inBar(cN)}</div></div><span class="fv">${dispInt(c)}</span></div>
+      `;
+
+      const ed = s !== null && d !== null && e !== null && d > 0 ? e / d : null;
+      const es = s !== null && d !== null && e !== null && s > 0 ? e / s : null;
+      const ctr = s !== null && d !== null && c !== null && d > 0 ? c / d : null;
+      const ctor = s !== null && d !== null && e !== null && c !== null && e > 0 ? c / e : null;
+      const ds = s !== null && d !== null && s > 0 ? d / s : null;
+      const cs = s !== null && d !== null && c !== null && s > 0 ? c / s : null;
+
+      document.getElementById('ovRates').innerHTML = `
+        <div class="r"><div class="rk">Engagement / deliv.</div><div class="rv">${fmt(ed)}</div></div>
+        <div class="r"><div class="rk">Engagement / sent</div><div class="rv">${fmt(es)}</div></div>
+        <div class="r"><div class="rk">CTR / deliv.</div><div class="rv">${fmt(ctr)}</div></div>
+        <div class="r"><div class="rk">CTOR</div><div class="rv">${fmt(ctor)}</div></div>
+        <div class="r"><div class="rk">Deliv. / sent</div><div class="rv">${fmt(ds)}</div></div>
+        <div class="r"><div class="rk">Click / sent</div><div class="rv">${fmt(cs)}</div></div>
+      `;
+
+      document.getElementById('kpis').innerHTML = `
+        <div class="kpi"><div class="k">Sent</div><div class="v">${dispInt(s)}</div><div class="h">unique users</div></div>
+        <div class="kpi"><div class="k">Delivered</div><div class="v">${dispInt(d)}</div><div class="h">unique users</div></div>
+        <div class="kpi"><div class="k">Engaged</div><div class="v">${dispInt(e)}</div><div class="h">open or click</div></div>
+        <div class="kpi"><div class="k">Clicked</div><div class="v">${dispInt(c)}</div><div class="h">unique users</div></div>
+        <div class="kpi"><div class="k">Eng. / deliv.</div><div class="v">${fmt(ed)}</div><div class="h">headline</div></div>
+        <div class="kpi"><div class="k">CTR</div><div class="v">${fmt(ctr)}</div><div class="h">vs delivered</div></div>
+      `;
+    }
+
+    function rowTemplate(name) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input type="text" class="cn" value="${name.replace(/"/g, '&quot;')}" /></td>
+        <td><input type="number" class="cs" min="0" step="1" /></td>
+        <td><input type="number" class="cd" min="0" step="1" /></td>
+        <td><input type="number" class="ce" min="0" step="1" /></td>
+        <td><input type="number" class="cc" min="0" step="1" /></td>
+        <td class="num ceff">—</td>
+        <td class="num cctr">—</td>
+        <td class="num cctor">—</td>
+      `;
+      tr.querySelectorAll('input').forEach((inp) => {
+        inp.addEventListener('input', () => renderRow(tr));
+        inp.addEventListener('change', () => renderRow(tr));
+      });
+      return tr;
+    }
+
+    function renderRow(tr) {
+      const s = parseInput(tr.querySelector('.cs'));
+      const d = parseInput(tr.querySelector('.cd'));
+      const e = parseInput(tr.querySelector('.ce'));
+      const c = parseInput(tr.querySelector('.cc'));
+      const eff = s !== null && d !== null && e !== null && d > 0 ? pct(e, d) : null;
+      const ctr = s !== null && d !== null && c !== null && d > 0 ? pct(c, d) : null;
+      const ctor = s !== null && d !== null && e !== null && c !== null && e > 0 ? pct(c, e) : null;
+      tr.querySelector('.ceff').textContent = fmt(eff);
+      tr.querySelector('.cctr').textContent = fmt(ctr);
+      tr.querySelector('.cctor').textContent = fmt(ctor);
+    }
+
+    function initTable() {
+      const tb = document.getElementById('campBody');
+      tb.innerHTML = '';
+      ADMIN_DEFAULTS.forEach((n) => {
+        const tr = rowTemplate(n);
+        tb.appendChild(tr);
+        renderRow(tr);
+      });
+    }
+
+    function wireOverall() {
+      ['ovSent', 'ovDel', 'ovEng', 'ovClk'].forEach((id) => {
+        const el = document.getElementById(id);
+        el.addEventListener('input', renderOverall);
+        el.addEventListener('change', renderOverall);
+      });
+    }
+
+    function fillExample() {
+      document.getElementById('ovSent').value = 12000;
+      document.getElementById('ovDel').value = 11700;
+      document.getElementById('ovEng').value = 3100;
+      document.getElementById('ovClk').value = 540;
+      document.getElementById('note').value = 'Sample data — replace from Redash';
+      document.getElementById('demoBanner').hidden = false;
+      const rows = document.querySelectorAll('#campBody tr');
+      const samples = [
+        [4200, 4100, 1100, 200],
+        [4500, 4380, 1200, 190],
+        [3300, 3220, 800, 150]
+      ];
+      rows.forEach((tr, i) => {
+        const [s, d, e, c] = samples[i] || [0, 0, 0, 0];
+        tr.querySelector('.cs').value = s;
+        tr.querySelector('.cd').value = d;
+        tr.querySelector('.ce').value = e;
+        tr.querySelector('.cc').value = c;
+        renderRow(tr);
+      });
+      renderOverall();
+    }
+
+    document.getElementById('btnAddRow').addEventListener('click', () => {
+      const tr = rowTemplate('');
+      document.getElementById('campBody').appendChild(tr);
+      renderRow(tr);
+    });
+
+    document.getElementById('btnClear').addEventListener('click', () => {
+      document.getElementById('ovSent').value = '';
+      document.getElementById('ovDel').value = '';
+      document.getElementById('ovEng').value = '';
+      document.getElementById('ovClk').value = '';
+      document.getElementById('note').value = '';
+      document.getElementById('demoBanner').hidden = true;
+      initTable();
+      renderOverall();
+    });
+
+    document.getElementById('btnExample').addEventListener('click', () => {
+      fillExample();
+    });
+
+    document.getElementById('btnExport').addEventListener('click', async () => {
+      const lines = [];
+      lines.push(['section', 'campaign_or_metric', 'sent', 'delivered', 'engaged', 'clicked'].join('\t'));
+      const s = num(document.getElementById('ovSent'));
+      const d = num(document.getElementById('ovDel'));
+      const e = num(document.getElementById('ovEng'));
+      const c = num(document.getElementById('ovClk'));
+      lines.push(['overall', '_all_', s, d, e, c].join('\t'));
+      document.querySelectorAll('#campBody tr').forEach((tr) => {
+        const name = tr.querySelector('.cn').value.trim() || '(unnamed)';
+        lines.push([
+          'campaign',
+          name,
+          num(tr.querySelector('.cs')),
+          num(tr.querySelector('.cd')),
+          num(tr.querySelector('.ce')),
+          num(tr.querySelector('.cc'))
+        ].join('\t'));
+      });
+      const tsv = lines.join('\n');
+      try {
+        await navigator.clipboard.writeText(tsv);
+        alert('TSV copied to clipboard.');
+      } catch {
+        prompt('Copy this TSV:', tsv);
+      }
+    });
+
+    wireOverall();
+    initTable();
+    fillExample();
+  </script>
+</body>
+</html>

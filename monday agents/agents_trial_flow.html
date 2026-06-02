@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to AI Agents — monday.com</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      background: #ffffff;
+    }
+    /* AI Agents design: centered welcome, teal accent, teardrop icon */
+    .trial-screen {
+      display: flex;
+      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .trial-screen__card {
+      text-align: center;
+      max-width: 440px;
+    }
+    /* Teardrop agent icon (AI Agents design system) */
+    .agent-icon {
+      width: 80px;
+      height: 96px;
+      margin: 0 auto 1.5rem;
+      position: relative;
+    }
+    .agent-icon__teardrop {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(180deg, #14b8a6 0%, #0d9488 100%);
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      box-shadow: 0 8px 24px rgba(13, 148, 136, 0.25);
+    }
+    .agent-icon__glow {
+      position: absolute;
+      inset: -12px;
+      background: radial-gradient(ellipse at center, rgba(20, 184, 166, 0.15) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .trial-headline {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #121212;
+      line-height: 1.35;
+      margin: 0 0 0.75rem;
+    }
+    .trial-subtext {
+      font-size: 1rem;
+      color: #64748b;
+      line-height: 1.5;
+      margin: 0 0 2rem;
+    }
+    /* Primary CTA: teal to match AI Agents Figma */
+    .trial-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #0d9488;
+      color: #ffffff;
+      font-size: 1rem;
+      font-weight: 500;
+      padding: 0.75rem 1.75rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+    .trial-cta:hover {
+      background: #0f766e;
+      box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
+    }
+    /* Optional: loader-style background (from Figma loader screens) */
+    .trial-screen--loader-style {
+      background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+    }
+    .trial-screen--loader-style .trial-screen__card {
+      background: #ffffff;
+      padding: 2.5rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    }
+    @media (max-width: 480px) {
+      .trial-screen { padding: 1.5rem; }
+      .trial-headline { font-size: 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+  <!-- First screen: from Figma AI-Agents - loader (Welcome to AI Agents) -->
+  <section class="trial-screen trial-screen--loader-style" id="screen-welcome">
+    <div class="trial-screen__card">
+      <div class="agent-icon" aria-hidden="true">
+        <div class="agent-icon__glow"></div>
+        <div class="agent-icon__teardrop"></div>
+      </div>
+      <h1 class="trial-headline">Welcome to AI Agents</h1>
+      <p class="trial-subtext">
+        Create custom agents that work the way you do. No code required—define what they do, how they sound, and how they connect to your tools.
+      </p>
+      <a href="#" class="trial-cta" id="cta-next">Next</a>
+    </div>
+  </section>
+
+  <script>
+    document.getElementById('cta-next').addEventListener('click', function(e) {
+      e.preventDefault();
+      console.log('Next clicked — wire to step 2');
+    });
+  </script>
+</body>
+</html>

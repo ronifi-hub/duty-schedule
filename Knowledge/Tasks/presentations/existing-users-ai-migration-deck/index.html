@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Existing users — New AI platform</title>
+  <style>
+    :root {
+      --primary: #6161ff;
+      --primary-light: #ebebff;
+      --dark: #1a1a2e;
+      --gray-900: #1e1e2f;
+      --gray-600: #6b7280;
+      --green: #00ca72;
+      --bg: #0f111a;
+      --card: #16182a;
+      --text: #f4f4f7;
+      --muted: #9ca3af;
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      padding: 12px 20px;
+      border-bottom: 1px solid #2a2d42;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    header h1 { font-size: 14px; font-weight: 600; margin: 0; color: var(--muted); }
+    .nav-hint { font-size: 12px; color: var(--muted); }
+    .progress { font-size: 12px; color: var(--primary); }
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 20px 80px;
+    }
+    .slide {
+      display: none;
+      max-width: 960px;
+      width: 100%;
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 40px 48px;
+      border: 1px solid #2a2d42;
+      box-shadow: 0 24px 48px rgba(0,0,0,0.35);
+    }
+    .slide.active { display: block; animation: fade 0.25s ease; }
+    @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .slide h2 {
+      font-size: 28px;
+      margin: 0 0 8px;
+      line-height: 1.2;
+      color: #fff;
+    }
+    .slide .sub { color: var(--muted); font-size: 15px; margin-bottom: 28px; }
+    .slide ul { margin: 0; padding-left: 20px; }
+    .slide li { margin: 10px 0; font-size: 17px; line-height: 1.45; }
+    .slide table { width: 100%; border-collapse: collapse; font-size: 15px; margin-top: 16px; }
+    .slide th, .slide td { border: 1px solid #2a2d42; padding: 10px 12px; text-align: left; }
+    .slide th { background: #1e2035; color: var(--muted); font-weight: 600; }
+    .tag { display: inline-block; background: var(--primary-light); color: var(--primary); padding: 2px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; margin-bottom: 12px; }
+    footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 16px 20px;
+      background: linear-gradient(transparent, var(--bg) 30%);
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+    }
+    button {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:disabled { opacity: 0.35; cursor: not-allowed; }
+    button.secondary { background: #2a2d42; color: var(--text); }
+    @media print {
+      header, footer { display: none; }
+      .slide { display: block !important; page-break-after: always; box-shadow: none; }
+      body { background: #fff; color: #000; }
+      .slide { background: #fff; border: 1px solid #ccc; color: #111; }
+      .slide h2 { color: #111; }
+      .slide .sub, .slide th { color: #444; }
+    }
+    @media (max-width: 768px) {
+      .slide { padding: 24px; }
+      .slide h2 { font-size: 22px; }
+    }
+
+    /* Visual timeline (Timeline slide) */
+    .viz-timeline {
+      position: relative;
+      margin: 8px 0 20px;
+      padding: 12px 0 8px;
+    }
+    .viz-timeline-line {
+      position: absolute;
+      left: 8%;
+      right: 8%;
+      top: 22px;
+      height: 4px;
+      background: linear-gradient(90deg, #6161ff 0%, #6161ff 35%, #3a3d52 35%, #3a3d52 100%);
+      border-radius: 4px;
+      opacity: 0.95;
+    }
+    .viz-timeline-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      position: relative;
+      z-index: 1;
+      align-items: flex-start;
+    }
+    .viz-step {
+      flex: 1;
+      min-width: 0;
+      text-align: center;
+      padding: 0 4px;
+    }
+    .viz-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #6161ff;
+      margin: 0 auto 14px;
+      border: 4px solid var(--card);
+      box-shadow: 0 0 0 1px #4b4e6a;
+      position: relative;
+      z-index: 2;
+    }
+    .viz-step.is-secondary .viz-dot {
+      background: #579bfc;
+      box-shadow: 0 0 0 1px #3d5c8a;
+    }
+    .viz-step.is-ongoing .viz-dot {
+      background: #fdab3d;
+      box-shadow: 0 0 0 1px #8a6a2e;
+    }
+    .viz-step.is-future .viz-dot {
+      background: #6b7280;
+    }
+    .viz-date {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: 0.02em;
+      margin-bottom: 6px;
+    }
+    .viz-title {
+      display: block;
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.25;
+      margin-bottom: 6px;
+    }
+    .viz-desc {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+    @media (max-width: 768px) {
+      .viz-timeline-line { display: none; }
+      .viz-timeline-row {
+        flex-direction: column;
+        align-items: stretch;
+        border-left: 4px solid #3a3d52;
+        padding-left: 16px;
+        margin-left: 12px;
+      }
+      .viz-step {
+        text-align: left;
+        padding-bottom: 20px;
+        position: relative;
+      }
+      .viz-dot {
+        position: absolute;
+        left: -27px;
+        top: 2px;
+        margin: 0;
+      }
+    }
+    @media print {
+      .viz-timeline-line { background: #ccc !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Existing users — New AI platform & migration</h1>
+    <span class="progress" id="progress"></span>
+    <span class="nav-hint">Arrow keys / click Next</span>
+  </header>
+  <main id="deck"></main>
+  <footer>
+    <button type="button" class="secondary" id="prev">Previous</button>
+    <button type="button" id="next">Next</button>
+  </footer>
+  <script>
+    const slides = [
+      {
+        title: "Existing users & the new AI platform",
+        sub: "Adoption, incentives, voluntary migration · Apr 2026",
+        html: "<span class='tag'>Vision</span><ul><li><strong>One</strong> coherent AI platform story: existing users <strong>discover</strong>, <strong>try</strong>, and can <strong>choose</strong> the new packaged offer.</li><li><strong>New logos</strong> (from May 6): new plan lineup only — separate policy.</li><li><strong>Same migration SKU + same discount</strong>; only <strong>population</strong> and <strong>messaging</strong> differ (add-on path vs high usage).</li></ul>"
+      },
+      {
+        title: "Why now",
+        sub: "Problem framing",
+        html: "<ul><li><strong>Two-track</strong> risk: legacy + add-on vs AI-inclusive plans for new buyers.</li><li>Without action: under-discovery, support load, slower unified adoption.</li><li><strong>Goal:</strong> voluntary migration with clear TCO and trust — not forced cutover.</li></ul>"
+      },
+      {
+        title: "Strategy at a glance",
+        sub: "One screen",
+        html: "<table><tr><th>Pillar</th><th>What</th></tr><tr><td><strong>May 6</strong></td><td>All existing: visibility + new platform CTA; ≥80% grant use → extra credits</td></tr><tr><td><strong>End May</strong></td><td>Agents monetization → agents-only trial (+ credits)</td></tr><tr><td><strong>Purchase</strong></td><td>One migration discount (terms TBD, e.g. promotional credits) — add-on path & high usage, same SKU</td></tr></table>"
+      },
+      {
+        title: "Timeline",
+        sub: "Cadence",
+        html: "<div class='viz-timeline' aria-label='Initiative timeline'><div class='viz-timeline-line'></div><div class='viz-timeline-row'><div class='viz-step'><div class='viz-dot'></div><span class='viz-date'>May 6</span><span class='viz-title'>Platform & comms</span><span class='viz-desc'>Surface credits · new platform CTA · 80%+ grant cohort gets top-up</span></div><div class='viz-step is-secondary'><div class='viz-dot'></div><span class='viz-date'>End May</span><span class='viz-title'>Agents wave</span><span class='viz-desc'>After monetization: agents-only trial + credits (separate cadence)</span></div><div class='viz-step is-ongoing'><div class='viz-dot'></div><span class='viz-date'>Ongoing</span><span class='viz-title'>Migration offer</span><span class='viz-desc'>Same SKU/discount in add-on flow + high-usage surfaces</span></div><div class='viz-step is-future'><div class='viz-dot'></div><span class='viz-date'>Post-promo</span><span class='viz-title'>Standard terms</span><span class='viz-desc'>Clear transition (e.g. after N months promo — Finance/Legal)</span></div></div></div><ul style='margin-top:8px'><li><strong>May 6:</strong> Platform + comms everywhere; 80%+ grant cohort gets top-up.</li><li><strong>End May:</strong> Agents trial wave (after monetization live).</li><li><strong>Ongoing:</strong> Migration offer in purchase flows + high-usage surfaces.</li><li><strong>Post-promo:</strong> Clear transition to standard terms (duration TBD — e.g. after 6 months promotional credits).</li></ul>"
+      },
+      {
+        title: "Deep dive — May 6 (all existing)",
+        sub: "Discovery & entry",
+        html: "<ul><li><strong>Both:</strong> surface existing entitlements <em>and</em> what is new with the platform.</li><li><strong>CTA:</strong> primary → new AI platform mode.</li><li><strong>Success:</strong> impressions → click → first meaningful action.</li></ul>"
+      },
+      {
+        title: "Deep dive — May 6 (≥80% grant cohort)",
+        sub: "Heavy grant consumers",
+        html: "<ul><li><strong>Who:</strong> consumed ≥80% of one-time purchase grant.</li><li><strong>What:</strong> additional credits to experiment (bucket/validity — Finance).</li><li><strong>Why:</strong> reduce hard stop without defaulting to “buy more add-on.”</li></ul>"
+      },
+      {
+        title: "Deep dive — End of May (agents)",
+        sub: "Second beat",
+        html: "<ul><li><strong>When:</strong> after agents monetization ships.</li><li><strong>What:</strong> agents-only trial + additional credits.</li><li><strong>Success:</strong> trial start → first agent run → paid policy.</li><li><strong>Comms:</strong> separate cadence from May 6 blast.</li></ul>"
+      },
+      {
+        title: "Deep dive — Purchase (single offer)",
+        sub: "Migration vs add-on",
+        html: "<ul><li><strong>Offer:</strong> discount to adopt <strong>new packaged offering</strong> instead of buying AI add-on again.</li><li><strong>Same SKU + same discount</strong> for add-on intent and high usage — <strong>copy</strong> differs.</li><li><strong>Overlap guardrail:</strong> one coherent promo if both apply.</li><li><strong>Open:</strong> discount shape (e.g. free credits N months) — Finance/Legal.</li></ul>"
+      },
+      {
+        title: "Messaging matrix",
+        sub: "Same deal, two doors",
+        html: "<table><tr><th>Audience</th><th>Entry</th><th>Angle</th></tr><tr><td>Add-on intent</td><td>AI add-ons checkout</td><td>Before you buy add-on — see bundled TCO</td></tr><tr><td>High usage</td><td>Usage / admin</td><td>Simplify billing with one packaged offer</td></tr></table>"
+      },
+      {
+        title: "Metrics & guardrails",
+        sub: "Data",
+        html: "<ul><li>Platform activation; migration funnel; support volume; margin per cohort.</li><li><strong>Counter-metrics:</strong> churn, NPS, billing disputes.</li><li>Key events: <code>ai_platform_cta_*</code>, <code>migration_discount_*</code>, <code>grant_topup_applied</code>, <code>agents_trial_started</code>.</li></ul>"
+      },
+      {
+        title: "Open decisions & next steps",
+        sub: "Ask",
+        html: "<ul><li>Finalize discount mechanics & invoice presentation (Finance + Legal).</li><li>Define 80% rule buckets (PM + Eng).</li><li>Design review: surfaces + overlap (see design brief).</li><li>Comms calendar: May 6 vs end-May agents.</li></ul><p style='margin-top:24px;color:var(--muted);font-size:14px;'>Open this file in a browser. Print → PDF for stakeholders.</p>"
+      }
+    ];
+
+    let i = 0;
+    const deck = document.getElementById("deck");
+    const progress = document.getElementById("progress");
+    const prev = document.getElementById("prev");
+    const next = document.getElementById("next");
+
+    function render() {
+      deck.innerHTML = slides.map((s, idx) =>
+        `<section class="slide${idx === i ? " active" : ""}" data-idx="${idx}">
+          <h2>${s.title}</h2>
+          <p class="sub">${s.sub}</p>
+          ${s.html}
+        </section>`
+      ).join("");
+      progress.textContent = `Slide ${i + 1} / ${slides.length}`;
+      prev.disabled = i === 0;
+      next.disabled = i === slides.length - 1;
+    }
+
+    function go(delta) {
+      i = Math.max(0, Math.min(slides.length - 1, i + delta));
+      render();
+    }
+
+    prev.addEventListener("click", () => go(-1));
+    next.addEventListener("click", () => go(1));
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight" || e.key === " ") { e.preventDefault(); go(1); }
+      if (e.key === "ArrowLeft") go(-1);
+    });
+
+    render();
+  </script>
+</body>
+</html>

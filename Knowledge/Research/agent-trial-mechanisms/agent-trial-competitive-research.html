@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Agent Trial Experience — Competitive Research</title>
+<style>
+  :root {
+    --primary: #6161ff;
+    --primary-light: #ebebff;
+    --dark: #1a1a2e;
+    --gray-900: #1e1e2f;
+    --gray-600: #6b7280;
+    --gray-400: #9ca3af;
+    --gray-200: #e5e7eb;
+    --gray-100: #f3f4f6;
+    --green: #00ca72;
+    --green-light: #e6faf0;
+    --red: #e44258;
+    --red-light: #fdeaed;
+    --orange: #fdab3d;
+    --orange-light: #fff5e6;
+    --blue: #579bfc;
+    --blue-light: #eaf1ff;
+    --radius: 12px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8f9fb; color: var(--dark); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+  .hero { background: linear-gradient(135deg, var(--gray-900) 0%, #2a2a5a 50%, var(--primary) 100%); color: #fff; padding: 80px 0 60px; }
+  .hero h1 { font-size: 2.6rem; font-weight: 800; letter-spacing: -1px; margin-bottom: 12px; }
+  .hero .subtitle { font-size: 1.1rem; color: rgba(255,255,255,0.7); max-width: 640px; }
+  .hero .meta { margin-top: 28px; display: flex; gap: 32px; font-size: 0.85rem; color: rgba(255,255,255,0.5); }
+
+  section { padding: 56px 0; }
+  section + section { border-top: 1px solid var(--gray-200); }
+  .section-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--primary); margin-bottom: 8px; }
+  .section-title { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; }
+  .section-desc { color: var(--gray-600); font-size: 0.95rem; max-width: 680px; margin-bottom: 32px; }
+
+  .stage-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--primary); color: #fff; font-size: 0.75rem; font-weight: 700; padding: 5px 14px; border-radius: 100px; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+  .card { background: #fff; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 28px; transition: box-shadow 0.2s; }
+  .card:hover { box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
+  .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .card-logo { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.75rem; color: #fff; flex-shrink: 0; }
+  .card h3 { font-size: 1.05rem; font-weight: 700; }
+  .card .tag { display: inline-block; font-size: 0.7rem; font-weight: 600; padding: 3px 10px; border-radius: 100px; margin-top: 4px; }
+  .tag-green { background: var(--green-light); color: #0a7c46; }
+  .tag-orange { background: var(--orange-light); color: #9a5c00; }
+  .tag-red { background: var(--red-light); color: #b91c34; }
+  .tag-blue { background: var(--blue-light); color: #1a5cc8; }
+  .card .detail { margin-top: 14px; font-size: 0.88rem; color: var(--gray-600); }
+  .card .detail strong { color: var(--dark); }
+  .card .kv { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gray-100); font-size: 0.85rem; }
+  .card .kv:last-child { border-bottom: none; }
+  .card .kv .label { color: var(--gray-600); }
+  .card .kv .value { font-weight: 600; text-align: right; max-width: 55%; }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--gray-200); border-radius: var(--radius); background: #fff; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  thead { background: var(--gray-100); }
+  th { text-align: left; padding: 14px 16px; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--gray-600); white-space: nowrap; }
+  td { padding: 14px 16px; border-top: 1px solid var(--gray-200); vertical-align: top; }
+  tr:hover td { background: #fafaff; }
+  td:first-child { font-weight: 600; white-space: nowrap; }
+  .highlight-row td { background: var(--primary-light); }
+
+  .insight-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 768px) { .insight-grid { grid-template-columns: 1fr; } }
+  .insight-card { background: #fff; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 24px; }
+  .insight-card.right { border-top: 3px solid var(--green); }
+  .insight-card.wrong { border-top: 3px solid var(--red); }
+  .insight-type { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+  .insight-card.right .insight-type { color: var(--green); }
+  .insight-card.wrong .insight-type { color: var(--red); }
+  .insight-card h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 8px; }
+  .insight-card p { font-size: 0.85rem; color: var(--gray-600); }
+
+  .principle { display: flex; gap: 20px; align-items: flex-start; background: #fff; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 24px; margin-bottom: 12px; }
+  .principle-num { width: 40px; height: 40px; background: var(--primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1rem; flex-shrink: 0; }
+  .principle h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
+  .principle p { font-size: 0.88rem; color: var(--gray-600); }
+  .principle .ref { font-size: 0.78rem; color: var(--gray-400); margin-top: 6px; }
+
+  .banner { background: linear-gradient(135deg, #1a1a2e 0%, #2a2a5a 100%); color: #fff; border-radius: var(--radius); padding: 36px; margin-bottom: 28px; }
+  .banner h3 { font-size: 1.2rem; font-weight: 800; margin-bottom: 8px; }
+  .banner p { color: rgba(255,255,255,0.65); font-size: 0.9rem; max-width: 600px; }
+
+  .footer { background: var(--gray-900); color: rgba(255,255,255,0.4); text-align: center; padding: 32px 0; font-size: 0.8rem; }
+
+  @media print {
+    .hero { padding: 40px 0 30px; }
+    section { padding: 32px 0; }
+    .card, .insight-card, .principle { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="container">
+    <h1>AI Agent Trial Mechanisms & Experience</h1>
+    <p class="subtitle">How 11 competitors structure agent trials and what users actually experience — from trial model to first click to conversion.</p>
+    <div class="meta">
+      <span>March 16, 2026</span>
+      <span>Product Discovery</span>
+      <span>6 Trial Patterns · 5 Experience Stages</span>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════ PART 1: TRIAL MECHANISMS ═══════════ -->
+
+<!-- TRIAL OVERVIEW TABLE -->
+<section>
+  <div class="container">
+    <div class="section-label">Part 1 — Trial Strategy</div>
+    <h2 class="section-title">How They Structure Free Access</h2>
+    <p class="section-desc">The business model behind each competitor's trial: what's free, what's capped, and how they charge.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Company</th><th>Trial Mechanism</th><th>Pricing Model</th><th>Self-Serve</th></tr></thead>
+        <tbody>
+          <tr class="highlight-row"><td>Notion</td><td>Free 10 weeks (grace period), then credits</td><td>$10/1K credits, complexity-based</td><td>Yes</td></tr>
+          <tr class="highlight-row"><td>ClickUp</td><td>Trial AI in Free plan; paid $7–22/user/mo</td><td>Per-seat add-on + Super Credits</td><td>Yes</td></tr>
+          <tr class="highlight-row"><td>Airtable</td><td>Credits bundled all plans (500/editor on Free)</td><td>Pooled credits; packs $40–400/mo</td><td>Yes</td></tr>
+          <tr class="highlight-row"><td>Base44</td><td>Permanent free tier (100 integration credits/mo)</td><td>Dual credits (msg + integration)</td><td>Yes</td></tr>
+          <tr><td>Salesforce</td><td>Free Dev Org + 250K credits</td><td>Flex Credits ~$0.10/action</td><td>Partial</td></tr>
+          <tr><td>Intercom</td><td>14-day free trial, no CC</td><td>$0.99/resolution</td><td>Yes</td></tr>
+          <tr><td>Zendesk</td><td>Suite trial + free resolutions</td><td>Pay per resolution</td><td>Yes</td></tr>
+          <tr><td>Microsoft</td><td>Free trial + $200 Azure credits</td><td>Copilot Credits / PAYG</td><td>Yes</td></tr>
+          <tr><td>HubSpot</td><td>Basic AI in Free CRM; agents at $500+/mo</td><td>Tier-gated</td><td>Partial</td></tr>
+          <tr><td>Asana</td><td>Basic on paid plans; Plus $135/mo</td><td>Credits (100K/mo)</td><td>Yes</td></tr>
+          <tr><td>ServiceNow</td><td>No public trial</td><td>Custom / negotiated</td><td>No</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- 6 TRIAL PATTERNS -->
+<section style="background:#fff;">
+  <div class="container">
+    <div class="section-label">Trial Patterns</div>
+    <h2 class="section-title">6 Patterns We Found</h2>
+    <p class="section-desc">Every competitor's approach maps to one of these patterns. Pattern 6 is the emerging dominant strategy.</p>
+
+    <div class="card-grid">
+      <div class="card" style="border-left: 4px solid var(--primary);">
+        <h3 style="margin-bottom:8px;">1. Usage-Capped Free Tier</h3>
+        <div style="font-size:0.8rem;color:var(--gray-400);margin-bottom:10px;">Salesforce · Base44 · Airtable · HubSpot · ClickUp</div>
+        <p style="font-size:0.88rem;color:var(--gray-600);">Free forever with hard credit cap. Zero friction, but cap may be too low to reach aha moment. Salesforce: ~10K free actions. Base44: ~33/month.</p>
+      </div>
+      <div class="card" style="border-left: 4px solid var(--primary);">
+        <h3 style="margin-bottom:8px;">2. Time-Boxed Free Trial</h3>
+        <div style="font-size:0.8rem;color:var(--gray-400);margin-bottom:10px;">Intercom (14 days) · Microsoft</div>
+        <p style="font-size:0.88rem;color:var(--gray-600);">Full access for fixed window. Creates urgency but may be too short for complex setups. Intercom: no CC required.</p>
+      </div>
+      <div class="card" style="border-left: 4px solid var(--primary);">
+        <h3 style="margin-bottom:8px;">3. Outcome-Based Pricing</h3>
+        <div style="font-size:0.8rem;color:var(--gray-400);margin-bottom:10px;">Zendesk · Intercom</div>
+        <p style="font-size:0.88rem;color:var(--gray-600);">Pay only when AI resolves issues. Aligns cost with value. <strong>No work management platform does this yet</strong> — potential differentiator.</p>
+      </div>
+      <div class="card" style="border-left: 4px solid var(--primary);">
+        <h3 style="margin-bottom:8px;">4. Tier-Gated Access</h3>
+        <div style="font-size:0.8rem;color:var(--gray-400);margin-bottom:10px;">HubSpot · Asana · ClickUp (Super Agents)</div>
+        <p style="font-size:0.88rem;color:var(--gray-600);">Agents locked behind higher tiers. Drives upsell but high friction — users can't try agents without $500+/mo commitment.</p>
+      </div>
+      <div class="card" style="border-left: 4px solid var(--primary);">
+        <h3 style="margin-bottom:8px;">5. Developer Sandbox</h3>
+        <div style="font-size:0.8rem;color:var(--gray-400);margin-bottom:10px;">Salesforce</div>
+        <p style="font-size:0.88rem;color:var(--gray-600);">Free isolated environment. Good for technical buyers, doesn't prove business value. Every Dev org includes Agentforce by default.</p>
+      </div>
+      <div class="card" style="border-left: 4px solid var(--green); background: #f8fdfb;">
+        <h3 style="margin-bottom:8px;">6. Launch Free, Charge Later ⭐</h3>
+        <div style="font-size:0.8rem;color:var(--gray-400);margin-bottom:10px;">Notion (10 weeks) · HubSpot (grace period)</div>
+        <p style="font-size:0.88rem;color:var(--gray-600);">Ship free, announce billing date, charge later. Maximizes adoption. Users build dependency, then convert. <strong>Emerging dominant strategy in work management.</strong></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KEY TRENDS -->
+<section>
+  <div class="container">
+    <div class="section-label">Market Signals</div>
+    <h2 class="section-title">6 Key Trends</h2>
+    <p class="section-desc">What the competitive landscape tells us about where the market is heading.</p>
+
+    <div class="card-grid" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
+      <div class="card">
+        <h3 style="font-size:0.92rem;margin-bottom:6px;">1. Per-seat → usage pricing</h3>
+        <p style="font-size:0.85rem;color:var(--gray-600);">Salesforce, Zendesk, Intercom align cost with value delivered, not headcount.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-size:0.92rem;margin-bottom:6px;">2. Credits are universal</h3>
+        <p style="font-size:0.85rem;color:var(--gray-600);">Every work management competitor uses credits. The term is now standard across the industry.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-size:0.92rem;margin-bottom:6px;">3. Self-serve is table stakes</h3>
+        <p style="font-size:0.85rem;color:var(--gray-600);">ServiceNow is the only outlier with zero self-serve — enterprise-only by design.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-size:0.92rem;margin-bottom:6px;">4. Grace periods = new trial</h3>
+        <p style="font-size:0.85rem;color:var(--gray-600);">Notion (free 10 weeks) and HubSpot launch free, charge later. Dominant in work management.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-size:0.92rem;margin-bottom:6px;">5. AI bundled into plans</h3>
+        <p style="font-size:0.85rem;color:var(--gray-600);">Airtable, ClickUp, Notion embed credits in tiers — agents aren't a separate product to buy.</p>
+      </div>
+      <div class="card">
+        <h3 style="font-size:0.92rem;margin-bottom:6px;">6. Aha before paywall</h3>
+        <p style="font-size:0.85rem;color:var(--gray-600);">Best trials guarantee users experience real agent value before asking for money.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- IMPLICATIONS -->
+<section style="background:#fff;">
+  <div class="container">
+    <div class="section-label">So What</div>
+    <h2 class="section-title">Implications for monday.com</h2>
+    <p class="section-desc">Opportunities and risks based on what competitors are doing with trial mechanisms.</p>
+
+    <div class="insight-grid">
+      <div class="insight-card right">
+        <div class="insight-type">Opportunity</div>
+        <h4>Notion's grace period is the #1 playbook</h4>
+        <p>Same category, same buyer, launched 3 weeks ago. Free 10 weeks, then credits. Study their communication, dashboard UX, and free→paid transition.</p>
+      </div>
+      <div class="insight-card right">
+        <div class="insight-type">Opportunity</div>
+        <h4>Bundled credits = emerging standard</h4>
+        <p>Airtable, ClickUp, Notion embed AI credits in existing tiers. Doing the same would feel natural and avoid friction of a separate agent purchase.</p>
+      </div>
+      <div class="insight-card right">
+        <div class="insight-type">Opportunity</div>
+        <h4>Outcome-based pricing is unclaimed</h4>
+        <p>No work management platform charges per "outcome." If monday can define a clear outcome unit, this is a real differentiator.</p>
+      </div>
+      <div class="insight-card wrong">
+        <div class="insight-type">Risk</div>
+        <h4>Notion sets the bar at 10 weeks free</h4>
+        <p>Anything less generous from monday.com will feel stingy by comparison. The expectation is now set.</p>
+      </div>
+      <div class="insight-card wrong">
+        <div class="insight-type">Risk</div>
+        <h4>Stacking agent cost on seat cost</h4>
+        <p>ClickUp's $22/user/mo on top of base pricing adds up fast for large teams. Total cost becomes a barrier.</p>
+      </div>
+      <div class="insight-card wrong">
+        <div class="insight-type">Risk</div>
+        <h4>Billing cliff kills conversion</h4>
+        <p>Abrupt cutoff when credits expire is the worst UX. Notion pauses gracefully — monday needs an equivalent.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ PART 2: TRIAL EXPERIENCE ═══════════ -->
+
+<!-- STAGE 1: DISCOVERY -->
+<section>
+  <div class="container">
+    <div class="section-label">Part 2 — Trial Experience</div>
+    <div class="stage-badge">Stage 1</div>
+    <h2 class="section-title">Discovery — How Users Find Agents</h2>
+    <p class="section-desc">The best experiences don't make agents a separate product to discover. They embed them where users already work.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Company</th><th>Discovery Entry Point</th><th>Friction</th></tr></thead>
+        <tbody>
+          <tr class="highlight-row"><td>Airtable</td><td>"Build a field agent" appears as a field type when adding a column — inside your table</td><td>Very Low</td></tr>
+          <tr class="highlight-row"><td>Notion</td><td>New sidebar section + in-app announcement; agents visible immediately</td><td>Very Low</td></tr>
+          <tr><td>Base44</td><td>"Agents" section in dashboard; 2-click toggle to enable</td><td>Low</td></tr>
+          <tr><td>ClickUp</td><td>Brain icon in sidebar; Super Agents gated behind paid AI add-on</td><td>Low</td></tr>
+          <tr><td>Intercom</td><td>"Fin AI Agent" in main nav; dedicated setup wizard</td><td>Low</td></tr>
+          <tr><td>Zendesk</td><td>Surfaced during Suite trial setup wizard — part of onboarding</td><td>Low</td></tr>
+          <tr><td>Salesforce</td><td>Agent Builder in Setup menu; requires Einstein enablement first</td><td>Medium</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="banner" style="margin-top: 24px;">
+      <h3>Best practice: Airtable's invisible discovery</h3>
+      <p>Users don't "discover agents" — they add a field to their table and one of the options is "Build a field agent." The agent IS the workflow, not a separate product.</p>
+    </div>
+  </div>
+</section>
+
+<!-- STAGE 2: FIRST SETUP -->
+<section style="background:#fff;">
+  <div class="container">
+    <div class="stage-badge">Stage 2</div>
+    <h2 class="section-title">First Setup — Creating Your First Agent</h2>
+    <p class="section-desc">How long it takes and what the user has to do to get an agent working for the first time.</p>
+
+    <div class="card-grid">
+      <!-- Notion -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-logo" style="background:#000">N</div>
+          <div>
+            <h3>Notion</h3>
+            <span class="tag tag-green">Fastest for complex agents</span>
+          </div>
+        </div>
+        <div class="kv"><span class="label">Setup method</span><span class="value">Conversational — describe intent</span></div>
+        <div class="kv"><span class="label">Time to first agent</span><span class="value">Minutes</span></div>
+        <div class="kv"><span class="label">Configuration</span><span class="value">Agent writes its own instructions</span></div>
+        <div class="kv"><span class="label">Triggers</span><span class="value">Schedule or event (Slack, DB change, email)</span></div>
+        <div class="kv"><span class="label">Integrations</span><span class="value">Slack, Mail, Calendar, Figma, Linear, MCP</span></div>
+        <p class="detail"><strong>UX magic:</strong> "As simple as writing a short job description and chatting with it." The agent auto-generates config, tools, and triggers. User describes; agent builds itself.</p>
+      </div>
+
+      <!-- Airtable -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-logo" style="background:#18bfff">AT</div>
+          <div>
+            <h3>Airtable</h3>
+            <span class="tag tag-green">Lowest friction</span>
+          </div>
+        </div>
+        <div class="kv"><span class="label">Setup method</span><span class="value">Inline — add field to table</span></div>
+        <div class="kv"><span class="label">Time to first agent</span><span class="value">Under 5 minutes</span></div>
+        <div class="kv"><span class="label">Configuration</span><span class="value">Click (+) → "Build a field agent" → write prompt</span></div>
+        <div class="kv"><span class="label">Field types</span><span class="value">Text, number, select, linked records</span></div>
+        <div class="kv"><span class="label">Options</span><span class="value">Internet search, auto-run toggle</span></div>
+        <p class="detail"><strong>UX magic:</strong> No separate agent builder. You're adding an "AI column" to your table — the agent lives inside your data. Lowest friction of any competitor.</p>
+      </div>
+
+      <!-- Base44 -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-logo" style="background:#ff6b35">B44</div>
+          <div>
+            <h3>Base44</h3>
+            <span class="tag tag-blue">Best for prototyping</span>
+          </div>
+        </div>
+        <div class="kv"><span class="label">Setup method</span><span class="value">Toggle + chat description</span></div>
+        <div class="kv"><span class="label">Time to first agent</span><span class="value">Under 5 minutes</span></div>
+        <div class="kv"><span class="label">Configuration</span><span class="value">4 panels: Guidelines, Tools, Memory, WhatsApp</span></div>
+        <div class="kv"><span class="label">Starter prompts</span><span class="value">"Build me a task manager with an AI assistant..."</span></div>
+        <div class="kv"><span class="label">Model choice</span><span class="value">GPT, Claude, Gemini — user picks</span></div>
+        <p class="detail"><strong>UX magic:</strong> Suggests specific starting prompts that give users a mental model of what's possible. Model transparency — users see what each AI model costs.</p>
+      </div>
+
+      <!-- ClickUp -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-logo" style="background:linear-gradient(135deg,#7b68ee,#49ccf9)">CU</div>
+          <div>
+            <h3>ClickUp</h3>
+            <span class="tag tag-orange">Most structured</span>
+          </div>
+        </div>
+        <div class="kv"><span class="label">Setup method</span><span class="value">6-step guided framework</span></div>
+        <div class="kv"><span class="label">Time to first agent</span><span class="value">15–30 minutes</span></div>
+        <div class="kv"><span class="label">Steps</span><span class="value">Workflow → type → scope → permissions → knowledge → rollout</span></div>
+        <div class="kv"><span class="label">Rollout model</span><span class="value">Sandbox → pilot → scale</span></div>
+        <div class="kv"><span class="label">Configuration</span><span class="value">Natural language via Brain</span></div>
+        <p class="detail"><strong>UX tradeoff:</strong> Forces users to think through scope and permissions before deploying. Feels enterprise-grade but adds friction for first-time users.</p>
+      </div>
+
+      <!-- Intercom -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-logo" style="background:#286efa">Fin</div>
+          <div>
+            <h3>Intercom Fin</h3>
+            <span class="tag tag-blue">Best test-before-deploy</span>
+          </div>
+        </div>
+        <div class="kv"><span class="label">Setup method</span><span class="value">4-stage wizard (Fin Flywheel)</span></div>
+        <div class="kv"><span class="label">Time to first agent</span><span class="value">30–60 minutes</span></div>
+        <div class="kv"><span class="label">Stages</span><span class="value">Train → Test → Deploy → Analyze</span></div>
+        <div class="kv"><span class="label">Content sources</span><span class="value">FAQs, Zendesk, Notion, Confluence, Salesforce</span></div>
+        <div class="kv"><span class="label">Testing</span><span class="value">Preview panels simulate conversations</span></div>
+        <p class="detail"><strong>UX magic:</strong> Testing is built into the flow — preview panels let you simulate conversations before going live. But requires content prep upfront.</p>
+      </div>
+
+      <!-- Salesforce -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-logo" style="background:#00a1e0">SF</div>
+          <div>
+            <h3>Salesforce Agentforce</h3>
+            <span class="tag tag-red">Highest friction</span>
+          </div>
+        </div>
+        <div class="kv"><span class="label">Setup method</span><span class="value">Agent Builder in Setup menu</span></div>
+        <div class="kv"><span class="label">Time to first agent</span><span class="value">20+ minutes (guided), longer without</span></div>
+        <div class="kv"><span class="label">Prerequisites</span><span class="value">Enable Einstein → optionally Data Cloud → then build</span></div>
+        <div class="kv"><span class="label">Guidance</span><span class="value">Trailhead learning path</span></div>
+        <div class="kv"><span class="label">Testing</span><span class="value">Sandbox environment recommended</span></div>
+        <p class="detail"><strong>UX friction:</strong> Prerequisite steps (Einstein, Data Cloud) before you can even open Agent Builder. Every prerequisite is a dropout point.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STAGE 3: USING THE AGENT -->
+<section>
+  <div class="container">
+    <div class="stage-badge">Stage 3</div>
+    <h2 class="section-title">Using the Agent — What It Feels Like</h2>
+    <p class="section-desc">How users interact with their agents day-to-day, and where they see value.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Company</th><th>Agent Paradigm</th><th>How Value Shows Up</th><th>Admin Controls</th></tr></thead>
+        <tbody>
+          <tr class="highlight-row">
+            <td>Notion</td>
+            <td>Background autonomous — runs 24/7 on schedule/triggers</td>
+            <td>Async — check results in Notion pages, Slack responses, usage dashboard</td>
+            <td>Pause/resume, undo any change, logged runs, permissions</td>
+          </tr>
+          <tr class="highlight-row">
+            <td>Airtable</td>
+            <td>Smart data field — generates in-cell within your table</td>
+            <td>Immediate — output appears right in your data, inline</td>
+            <td>Manual "Generate" or auto-run toggle, workspace credit monitoring</td>
+          </tr>
+          <tr>
+            <td>Base44</td>
+            <td>Chat interface — conversational within app</td>
+            <td>Real-time — agent responds in chat, takes actions on data</td>
+            <td>Model selection, tool access, memory toggle</td>
+          </tr>
+          <tr>
+            <td>ClickUp</td>
+            <td>Workspace assistant — responds to triggers/requests</td>
+            <td>In task context — summaries, briefs, status updates</td>
+            <td>Granular permissions, stop conditions, audit trail</td>
+          </tr>
+          <tr>
+            <td>Intercom</td>
+            <td>Customer-facing bot — handles support conversations</td>
+            <td>Dashboard metrics — resolution rate, CSAT, deflection</td>
+            <td>Brand voice, escalation rules, task definitions</td>
+          </tr>
+          <tr>
+            <td>Salesforce</td>
+            <td>CRM workflow agent — handles cases, leads, coaching</td>
+            <td>Within CRM — case updates, lead scores, recommendations</td>
+            <td>Trust Layer, topic/action config, guardrails</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px;">
+      <div class="banner">
+        <h3>Notion = Background</h3>
+        <p>Users set up agents and wait. Agents run autonomously answering Slack questions, routing tasks, compiling reports. Value is async — you check back later.</p>
+      </div>
+      <div class="banner">
+        <h3>Airtable = Inline</h3>
+        <p>Agents feel like smart formulas. Outputs appear in cells alongside your data. Value is immediate and visible right where you work.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STAGE 4: HITTING LIMITS -->
+<section style="background:#fff;">
+  <div class="container">
+    <div class="stage-badge">Stage 4</div>
+    <h2 class="section-title">Hitting Limits — When the Trial Runs Out</h2>
+    <p class="section-desc">What users experience when they exhaust their free credits or trial period. This moment makes or breaks conversion.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Company</th><th>What Happens</th><th>Experience Quality</th><th>Warning System</th></tr></thead>
+        <tbody>
+          <tr class="highlight-row">
+            <td>Notion</td>
+            <td>Agents pause at next monthly service date — never mid-workflow</td>
+            <td style="color:var(--green);font-weight:600;">Excellent</td>
+            <td>Proactive alerts + real-time usage dashboard</td>
+          </tr>
+          <tr>
+            <td>Intercom</td>
+            <td>Seamless transition to $0.99/resolution billing</td>
+            <td style="color:var(--green);font-weight:600;">Excellent</td>
+            <td>Trial countdown + resolution tracking</td>
+          </tr>
+          <tr>
+            <td>Salesforce</td>
+            <td>Switches to pay-as-you-go from free credits</td>
+            <td style="color:var(--green);font-weight:600;">Good</td>
+            <td>Flex Credit balance tracking</td>
+          </tr>
+          <tr>
+            <td>Airtable</td>
+            <td>Buy more credits instantly in-product; fields stop generating</td>
+            <td style="color:var(--orange);font-weight:600;">Moderate</td>
+            <td>Credit usage logs</td>
+          </tr>
+          <tr>
+            <td>ClickUp</td>
+            <td>Falls back to limited free AI; Super Agent features disabled</td>
+            <td style="color:var(--orange);font-weight:600;">Moderate</td>
+            <td>Credit balance + in-product notifications</td>
+          </tr>
+          <tr>
+            <td>Base44</td>
+            <td>Hard stop — agents go silent until monthly credit reset</td>
+            <td style="color:var(--red);font-weight:600;">Poor</td>
+            <td>Credit counter visible</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="banner" style="margin-top: 24px;">
+      <h3>Gold standard: Notion's graceful pause</h3>
+      <p>Current runs complete. Agents stop at billing cycle boundary, not mid-action. Proactive alerts warn admins before they hit zero. Agents auto-resume once credits are purchased. No active work is ever interrupted.</p>
+    </div>
+  </div>
+</section>
+
+<!-- STAGE 5: CONVERSION -->
+<section>
+  <div class="container">
+    <div class="stage-badge">Stage 5</div>
+    <h2 class="section-title">Conversion — How They Ask for Money</h2>
+    <p class="section-desc">The moment the product transitions from free to paid. Smoothness here directly impacts conversion rate.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Company</th><th>Conversion Trigger</th><th>Conversion UX</th></tr></thead>
+        <tbody>
+          <tr class="highlight-row">
+            <td>Notion</td>
+            <td>Grace period ends May 4; usage dashboard builds cost awareness throughout</td>
+            <td>Admin buys credits from in-product dashboard. Agents resume automatically. No sales call needed.</td>
+          </tr>
+          <tr>
+            <td>Intercom</td>
+            <td>14-day trial ends</td>
+            <td>Billing starts automatically if CC on file. Per-resolution = cost scales with usage.</td>
+          </tr>
+          <tr>
+            <td>Airtable</td>
+            <td>Credits depleted; fields stop generating</td>
+            <td>"Buy more" prompt in-product. Instant purchase ($40/mo+), agents resume immediately.</td>
+          </tr>
+          <tr>
+            <td>ClickUp</td>
+            <td>User hits trial limits; Super Agent features shown as locked</td>
+            <td>Upsell prompts with tier comparison: $7 Brain AI → $22 Everything AI per user.</td>
+          </tr>
+          <tr>
+            <td>Base44</td>
+            <td>Monthly credits exhausted</td>
+            <td>Upgrade prompt with plan comparison. Monthly reset = natural retry window.</td>
+          </tr>
+          <tr>
+            <td>Salesforce</td>
+            <td>Free credits exhausted</td>
+            <td>Flex Credit purchase or pay-as-you-go. Account team for larger deployments.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARISON TABLE -->
+<section style="background:#fff;">
+  <div class="container">
+    <div class="section-label">Head to Head</div>
+    <h2 class="section-title">Experience Comparison — Direct Competitors</h2>
+    <p class="section-desc">The dimensions that matter most for the trial UX of work management agents.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Dimension</th><th>Notion</th><th>ClickUp</th><th>Airtable</th><th>Base44</th><th>Intercom</th></tr></thead>
+        <tbody>
+          <tr><td>Time to first agent</td><td>Minutes</td><td>15–30 min</td><td>Under 5 min</td><td>Under 5 min</td><td>30–60 min</td></tr>
+          <tr><td>Setup method</td><td>Describe intent</td><td>6-step guided</td><td>Add field to table</td><td>Toggle + chat</td><td>4-stage wizard</td></tr>
+          <tr><td>Agent paradigm</td><td>Background autonomous</td><td>Workspace assistant</td><td>Smart data field</td><td>Chat interface</td><td>Customer-facing bot</td></tr>
+          <tr><td>Where value shows</td><td>Async — check later</td><td>Task context</td><td>Inline in cells</td><td>Real-time chat</td><td>Dashboard metrics</td></tr>
+          <tr><td>Limit experience</td><td style="color:var(--green);">Pause at boundary</td><td>Degrade to basic</td><td>Buy more instantly</td><td style="color:var(--red);">Hard stop</td><td style="color:var(--green);">Auto-bill</td></tr>
+          <tr><td>Standout UX</td><td>Agent writes own config</td><td>Rollout framework</td><td>No agent builder needed</td><td>Model cost transparency</td><td>Test before deploy</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- INSIGHTS -->
+<section>
+  <div class="container">
+    <div class="section-label">Insights</div>
+    <h2 class="section-title">What They Get Right — and Wrong</h2>
+    <p class="section-desc">Experience patterns worth adopting and antipatterns to avoid.</p>
+
+    <div class="insight-grid">
+      <div class="insight-card right">
+        <div class="insight-type">What works</div>
+        <h4>Agent builds itself from intent</h4>
+        <p>Notion: describe what you want, agent generates its own config, tools, and triggers. Users don't configure — they describe. Lowest friction, most magical.</p>
+      </div>
+      <div class="insight-card right">
+        <div class="insight-type">What works</div>
+        <h4>Value visible immediately</h4>
+        <p>Airtable shows outputs inline in table cells. You don't go somewhere else to check results. The value is right where you're already working.</p>
+      </div>
+      <div class="insight-card right">
+        <div class="insight-type">What works</div>
+        <h4>Test before deploy</h4>
+        <p>Intercom's preview panels let you simulate conversations before going live. For agents that modify real data, a "dry run" mode gives confidence and reduces fear.</p>
+      </div>
+      <div class="insight-card right">
+        <div class="insight-type">What works</div>
+        <h4>Usage transparency from day one</h4>
+        <p>Notion shows a credit dashboard during the free period — users see what agents cost before paying. Removes "surprise bill" fear and builds trust.</p>
+      </div>
+      <div class="insight-card wrong">
+        <div class="insight-type">What fails</div>
+        <h4>Prerequisites kill momentum</h4>
+        <p>Salesforce requires enabling Einstein and Data Cloud before you can open Agent Builder. Every prerequisite step is a dropout point in the trial funnel.</p>
+      </div>
+      <div class="insight-card wrong">
+        <div class="insight-type">What fails</div>
+        <h4>No guidance on what to build first</h4>
+        <p>Most platforms drop users into a blank agent builder. Base44's starter prompts and Intercom's templates are rare exceptions. Users need a suggested first use case.</p>
+      </div>
+      <div class="insight-card wrong">
+        <div class="insight-type">What fails</div>
+        <h4>Background agents delay the aha moment</h4>
+        <p>Notion agents run async — set them up and wait. For a trial, this means users have to check back later. The "it works!" moment is delayed, not instant.</p>
+      </div>
+      <div class="insight-card wrong">
+        <div class="insight-type">What fails</div>
+        <h4>Hard cutoff when limits hit</h4>
+        <p>Base44 agents just go silent when credits run out. For users who built dependency during the trial, this feels like punishment, not a nudge to upgrade.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRINCIPLES -->
+<section style="background:#fff;">
+  <div class="container">
+    <div class="section-label">Recommendations</div>
+    <h2 class="section-title">UX Principles for monday.com Agents Trial</h2>
+    <p class="section-desc">Six design principles derived from the best and worst competitor experiences.</p>
+
+    <div class="principle">
+      <div class="principle-num">1</div>
+      <div>
+        <h4>Let users describe, not configure</h4>
+        <p>Follow Notion — conversational agent creation where the user states intent and the agent generates its own setup. No field-by-field configuration.</p>
+        <div class="ref">Inspired by: Notion's "write a job description" setup</div>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">2</div>
+      <div>
+        <h4>Show value inline, not in a dashboard</h4>
+        <p>Follow Airtable — agent outputs should appear where users already work (boards, items, columns), not in a separate agent management screen.</p>
+        <div class="ref">Inspired by: Airtable's in-cell agent fields</div>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">3</div>
+      <div>
+        <h4>Include a "try it now" dry run</h4>
+        <p>Follow Intercom — let users preview what an agent would do before it runs for real. Especially important for agents that modify board data or send notifications.</p>
+        <div class="ref">Inspired by: Intercom's preview panels in the Fin Flywheel</div>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">4</div>
+      <div>
+        <h4>Suggest the first agent, don't show a blank builder</h4>
+        <p>Based on the user's board structure, most common workflows, or most repetitive tasks — recommend a specific first agent. Don't make them imagine the use case.</p>
+        <div class="ref">Inspired by: Base44's starter prompts; gap identified across most competitors</div>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">5</div>
+      <div>
+        <h4>Never interrupt active work</h4>
+        <p>Follow Notion's degradation model — agents finish current runs and pause at the billing boundary. Show warnings well before limits are hit. No mid-action cutoffs.</p>
+        <div class="ref">Inspired by: Notion's "pause at next service date" model</div>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">6</div>
+      <div>
+        <h4>Make usage visible from day one</h4>
+        <p>Show a usage/credit dashboard during the free period so users can forecast costs and feel in control. Transparency builds trust and reduces upgrade anxiety.</p>
+        <div class="ref">Inspired by: Notion's credit dashboard during free beta</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <p>Competitive Research — AI Agent Trial Experience · March 2026 · 11 Competitors · 5 Experience Stages</p>
+  </div>
+</footer>
+
+</body>
+</html>

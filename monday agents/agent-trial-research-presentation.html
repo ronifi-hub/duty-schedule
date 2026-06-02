@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Agent Trials — Competitive Research & monday Direction</title>
+  <style>
+    :root {
+      --primary: #6161ff;
+      --primary-light: #ebebff;
+      --dark: #1a1a2e;
+      --gray-600: #6b7280;
+      --gray-200: #e5e7eb;
+      --gray-100: #f3f4f6;
+      --green: #00ca72;
+      --red: #e44258;
+      --orange: #fdab3d;
+      --slide-bg: #fafbfc;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; scroll-snap-type: y mandatory; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--dark);
+      background: #111;
+      line-height: 1.45;
+    }
+    .deck { max-width: 100%; }
+    .slide {
+      min-height: 100vh;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      padding: 48px 56px 80px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background: var(--slide-bg);
+      border-bottom: 1px solid var(--gray-200);
+    }
+    .slide.dark {
+      background: linear-gradient(145deg, #1a1a2e 0%, #2d2d5c 50%, #3d3d7a 100%);
+      color: #fff;
+      border-bottom: none;
+    }
+    .slide.dark .muted { color: rgba(255,255,255,0.65); }
+    .slide.dark h2 { color: #fff; }
+    .slide-inner { max-width: 1040px; margin: 0 auto; width: 100%; }
+    .kicker {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+    .slide.dark .kicker { color: #a8a8ff; }
+    h1 { font-size: clamp(1.85rem, 4vw, 2.75rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.15; }
+    h2 { font-size: clamp(1.35rem, 2.8vw, 1.85rem); font-weight: 800; margin-bottom: 16px; color: var(--dark); }
+    .muted { color: var(--gray-600); font-size: 0.95rem; max-width: 720px; }
+    ul { margin: 12px 0 0 1.15rem; }
+    li { margin: 8px 0; font-size: 0.92rem; }
+    .slide.dark li { color: rgba(255,255,255,0.92); }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 20px; }
+    @media (max-width: 820px) { .two-col { grid-template-columns: 1fr; } }
+    .card {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: 12px;
+      padding: 18px 20px;
+      font-size: 0.86rem;
+    }
+    .slide:not(.dark) .card h3 { font-size: 0.95rem; margin-bottom: 8px; }
+    .tag { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--primary); }
+    .good { border-left: 4px solid var(--green); }
+    .bad { border-left: 4px solid var(--red); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.72rem; margin-top: 16px; background: #fff; border-radius: 10px; overflow: hidden; border: 1px solid var(--gray-200); }
+    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--gray-200); vertical-align: top; }
+    th { background: var(--gray-100); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.65rem; color: var(--gray-600); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafaff; }
+    .highlight td { background: var(--primary-light); }
+    table.tight th, table.tight td { font-size: 0.62rem; padding: 7px 9px; vertical-align: top; }
+    table.tight th { font-size: 0.58rem; }
+    .nav {
+      position: fixed;
+      bottom: 20px;
+      right: 24px;
+      z-index: 100;
+      display: flex;
+      gap: 8px;
+    }
+    .nav button {
+      background: var(--dark);
+      color: #fff;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+    .nav button:hover { background: var(--primary); }
+    .slide-num { position: fixed; bottom: 24px; left: 24px; font-size: 0.75rem; color: var(--gray-600); z-index: 100; background: rgba(255,255,255,0.9); padding: 6px 12px; border-radius: 6px; }
+    .slide.dark + * .slide-num,
+    body:has(.slide.dark:focus) .slide-num { color: #fff; background: rgba(0,0,0,0.4); }
+    .callout {
+      margin-top: 20px;
+      padding: 16px 20px;
+      background: var(--primary-light);
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      border-left: 4px solid var(--primary);
+    }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px; }
+    @media (max-width: 900px) { .grid-3 { grid-template-columns: 1fr; } }
+    .small { font-size: 0.8rem; color: var(--gray-600); }
+    pre.flow {
+      margin-top: 16px;
+      padding: 16px;
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: 10px;
+      font-size: 0.78rem;
+      overflow-x: auto;
+      line-height: 1.5;
+    }
+    @media print {
+      html { scroll-snap-type: none; }
+      .slide { min-height: auto; page-break-after: always; padding: 36px; }
+      .nav, .slide-num { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck" id="deck">
+
+    <section class="slide dark" data-slide="1">
+      <div class="slide-inner">
+        <p class="kicker">Product discovery · March 2026</p>
+        <h1>AI agent trials — competitive landscape &amp; monday direction</h1>
+        <p class="muted" style="margin-top:16px;max-width:640px;">How 11+ competitors structure free access and end-to-end trial UX — plus implications and our draft Platform Agents trial flow.</p>
+        <p class="muted" style="margin-top:24px;font-size:0.85rem;">Sources: agent-trial-competitive-research.html · competitor-trial-research.md · platform-agents-trial-flow.md</p>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="2">
+      <div class="slide-inner">
+        <p class="kicker">Agenda</p>
+        <h2>What we’ll cover</h2>
+        <ul>
+          <li><strong>Mechanisms</strong> — trial models, pricing shape, self-serve vs sales-led</li>
+          <li><strong>Patterns &amp; trends</strong> — six patterns, six market signals</li>
+          <li><strong>Implications</strong> — opportunities and risks for monday Agents</li>
+          <li><strong>Journey</strong> — discovery (full table) → setup → use / limits / conversion (full tables) → head-to-head + Base44</li>
+          <li><strong>Synthesis</strong> — what works, what fails, six UX principles</li>
+          <li><strong>monday draft</strong> — dedicated agent trial (1K credits / 30d) and graceful pause</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="3">
+      <div class="slide-inner">
+        <p class="kicker">Framing</p>
+        <h2>Why this matters</h2>
+        <ul>
+          <li>Trial design drives <strong>activation</strong>, <strong>time-to-aha</strong>, and <strong>conversion</strong> in a crowded category.</li>
+          <li>Norms are shifting: <strong>credits</strong>, <strong>grace periods</strong>, <strong>bundled AI</strong> — not only classic 14-day trials.</li>
+          <li>Internal tension: account-level AI credits shared across features can <strong>block</strong> users from ever running agents after they invest in setup.</li>
+        </ul>
+        <div class="callout">Question for the deck: Are we optimizing for adoption (freemium/grace) or revenue alignment (consumption) — and where do agents sit?</div>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="4">
+      <div class="slide-inner">
+        <p class="kicker">Part 1 — Trial strategy</p>
+        <h2>How competitors structure free access</h2>
+        <p class="muted" style="margin-bottom:8px;">Trial mechanism · pricing model · self-serve</p>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>Company</th><th>Trial mechanism</th><th>Pricing model</th><th>Self-serve</th></tr></thead>
+            <tbody>
+              <tr class="highlight"><td>Notion</td><td>Free ~10 weeks, then credits</td><td>~$10/1K credits</td><td>Yes</td></tr>
+              <tr class="highlight"><td>ClickUp</td><td>AI in Free; paid add-ons</td><td>Per-seat + Super Credits</td><td>Yes</td></tr>
+              <tr class="highlight"><td>Airtable</td><td>Credits on all plans</td><td>Pooled; packs</td><td>Yes</td></tr>
+              <tr class="highlight"><td>Base44</td><td>Permanent free tier</td><td>Dual credits</td><td>Yes</td></tr>
+              <tr><td>Salesforce</td><td>Dev org + credits</td><td>Flex ~per action</td><td>Partial</td></tr>
+              <tr><td>Intercom</td><td>14d trial, no CC</td><td>Per resolution</td><td>Yes</td></tr>
+              <tr><td>Zendesk</td><td>Suite trial + resolutions</td><td>Per resolution</td><td>Yes</td></tr>
+              <tr><td>Microsoft</td><td>Trial + Azure credits</td><td>Copilot / PAYG</td><td>Yes</td></tr>
+              <tr><td>HubSpot</td><td>Basic AI free; agents high tier</td><td>Tier-gated</td><td>Partial</td></tr>
+              <tr><td>Asana</td><td>On paid tiers</td><td>Credits</td><td>Yes</td></tr>
+              <tr><td>ServiceNow</td><td>No public trial</td><td>Custom</td><td>No</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="5">
+      <div class="slide-inner">
+        <p class="kicker">Trial patterns</p>
+        <h2>Six patterns in the market</h2>
+        <div class="grid-3">
+          <div class="card"><span class="tag">1</span><h3>Usage-capped free</h3><p class="small">SF, Base44, Airtable, HubSpot, ClickUp — cap may block aha.</p></div>
+          <div class="card"><span class="tag">2</span><h3>Time-boxed</h3><p class="small">Intercom 14d, Microsoft — urgency vs complex setup.</p></div>
+          <div class="card"><span class="tag">3</span><h3>Outcome-based</h3><p class="small">Zendesk, Intercom — <strong>no WM player</strong> documented; wedge?</p></div>
+          <div class="card"><span class="tag">4</span><h3>Tier-gated</h3><p class="small">HubSpot, Asana, ClickUp Super — friction, upsell.</p></div>
+          <div class="card"><span class="tag">5</span><h3>Dev sandbox</h3><p class="small">Salesforce — technical buyers; less business proof.</p></div>
+          <div class="card" style="background:#f0fdf4;border-color:#86efac;"><span class="tag">6 ★</span><h3>Launch free, charge later</h3><p class="small">Notion, HubSpot grace — <strong>emerging dominant</strong> in work management.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="6">
+      <div class="slide-inner">
+        <p class="kicker">Market signals</p>
+        <h2>Six trends</h2>
+        <ul>
+          <li><strong>Per-seat → usage</strong> — cost tracks value delivered (SF, Zendesk, Intercom).</li>
+          <li><strong>Credits are universal</strong> — shared vocabulary across competitors.</li>
+          <li><strong>Self-serve is table stakes</strong> — ServiceNow is the outlier.</li>
+          <li><strong>Grace periods = new trial</strong> — ship free, announce billing later.</li>
+          <li><strong>AI bundled into plans</strong> — agents not always a separate SKU.</li>
+          <li><strong>Aha before paywall</strong> — best trials prove value before money.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="7">
+      <div class="slide-inner">
+        <p class="kicker">Supplement · Feb 2026 scan</p>
+        <h2>Enterprise / agentic lens</h2>
+        <table>
+          <thead><tr><th>Company</th><th>Trial</th><th>Note</th></tr></thead>
+          <tbody>
+            <tr><td>Salesforce Agentforce</td><td>Dev + Trailhead</td><td>Guided “real agent” in ~20 min</td></tr>
+            <tr><td>ServiceNow</td><td>Sales-led</td><td>Consumption “assists” by workflow</td></tr>
+            <tr><td>HubSpot / ClickUp</td><td>Freemium AI</td><td>AI embedded in free tier</td></tr>
+            <tr><td>Lindy</td><td>Freemium</td><td>~60s to first agent</td></tr>
+          </tbody>
+        </table>
+        <p class="muted" style="margin-top:14px;">Human-in-the-loop and trust narratives matter for enterprise; consumption vs bundled freemium is a strategic fork.</p>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="8">
+      <div class="slide-inner">
+        <p class="kicker">So what</p>
+        <h2>Implications for monday.com</h2>
+        <div class="two-col">
+          <div>
+            <h3 style="font-size:1rem;color:var(--green);margin-bottom:10px;">Opportunities</h3>
+            <ul style="font-size:0.88rem;">
+              <li>Notion-style grace + comms — same category bar.</li>
+              <li>Bundled credits feel standard — reduces separate “agent SKU” friction.</li>
+              <li>Outcome-based pricing unclaimed in WM if we define a unit.</li>
+            </ul>
+          </div>
+          <div>
+            <h3 style="font-size:1rem;color:var(--red);margin-bottom:10px;">Risks</h3>
+            <ul style="font-size:0.88rem;">
+              <li>Generosity expectations — shorter free window feels stingy.</li>
+              <li>Stacking agent $ on seat $ — total cost barrier.</li>
+              <li><strong>Billing cliff</strong> — abrupt cutoffs; Notion’s graceful pause is the reference.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="9">
+      <div class="slide-inner">
+        <p class="kicker">Stage 1</p>
+        <h2>Discovery — how users find agents</h2>
+        <p class="muted">Embed where work happens; avoid treating agents as a separate product island.</p>
+        <div style="overflow-x:auto;">
+          <table class="tight">
+            <thead><tr><th>Company</th><th>Discovery entry point</th><th>Friction</th></tr></thead>
+            <tbody>
+              <tr class="highlight"><td>Airtable</td><td>“Build a field agent” appears when adding a column — inside the table</td><td>Very low</td></tr>
+              <tr class="highlight"><td>Notion</td><td>New sidebar section + in-app announcement; agents visible immediately</td><td>Very low</td></tr>
+              <tr><td>Base44</td><td>“Agents” section in dashboard; ~2-click toggle to enable</td><td>Low</td></tr>
+              <tr><td>ClickUp</td><td>Brain icon in sidebar; Super Agents gated behind paid AI add-on</td><td>Low</td></tr>
+              <tr><td>Intercom</td><td>“Fin AI Agent” in main nav; dedicated setup wizard</td><td>Low</td></tr>
+              <tr><td>Zendesk</td><td>Surfaced during Suite trial setup wizard — part of onboarding</td><td>Low</td></tr>
+              <tr><td>Salesforce</td><td>Agent Builder in Setup menu; requires Einstein enablement first</td><td>Medium</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout">Best practice: Airtable — the agent <em>is</em> the workflow (field type), not a separate product to discover.</div>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="10">
+      <div class="slide-inner">
+        <p class="kicker">Stage 2</p>
+        <h2>First setup — time to first agent</h2>
+        <table>
+          <thead><tr><th>Product</th><th>Method</th><th>Time</th><th>Note</th></tr></thead>
+          <tbody>
+            <tr><td>Airtable</td><td>Inline field</td><td>&lt;5 min</td><td>Lowest friction</td></tr>
+            <tr><td>Notion</td><td>Conversational</td><td>Minutes</td><td>Agent writes its own config</td></tr>
+            <tr><td>Base44</td><td>Toggle + chat</td><td>&lt;5 min</td><td>Starter prompts, model transparency</td></tr>
+            <tr><td>ClickUp</td><td>6-step guided</td><td>15–30 min</td><td>Enterprise-grade friction</td></tr>
+            <tr><td>Intercom Fin</td><td>4-stage wizard</td><td>30–60 min</td><td>Test before deploy</td></tr>
+            <tr><td>Salesforce</td><td>Agent Builder + prereqs</td><td>20+ min</td><td>Highest friction</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="11">
+      <div class="slide-inner">
+        <p class="kicker">Stage 3</p>
+        <h2>Using the agent — paradigm &amp; value</h2>
+        <p class="muted">How interaction feels day-to-day and where users see payoff.</p>
+        <div style="overflow-x:auto;">
+          <table class="tight">
+            <thead><tr><th>Company</th><th>Agent paradigm</th><th>How value shows up</th><th>Admin controls</th></tr></thead>
+            <tbody>
+              <tr class="highlight"><td>Notion</td><td>Background autonomous (schedule/triggers)</td><td>Async — pages, Slack, usage dashboard</td><td>Pause/resume, undo, logged runs, permissions</td></tr>
+              <tr class="highlight"><td>Airtable</td><td>Smart data field — in-cell</td><td>Immediate — output in table cells</td><td>Manual “Generate” or auto-run; credit monitoring</td></tr>
+              <tr><td>Base44</td><td>Chat in app</td><td>Real-time responses + actions on data</td><td>Model, tools, memory</td></tr>
+              <tr><td>ClickUp</td><td>Workspace assistant</td><td>Task context — summaries, briefs, status</td><td>Permissions, stop conditions, audit trail</td></tr>
+              <tr><td>Intercom</td><td>Customer-facing bot</td><td>Dashboard — resolution rate, CSAT, deflection</td><td>Brand voice, escalation, task definitions</td></tr>
+              <tr><td>Salesforce</td><td>CRM workflow agent</td><td>Inside CRM — cases, leads, coaching</td><td>Trust Layer, topics/actions, guardrails</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="small" style="margin-top:12px;"><strong>Contrast:</strong> Notion = async “check back later” · Airtable = immediate inline value.</p>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="12">
+      <div class="slide-inner">
+        <p class="kicker">Stage 4</p>
+        <h2>Hitting limits — when the trial runs out</h2>
+        <p class="muted">This moment makes or breaks conversion.</p>
+        <div style="overflow-x:auto;">
+          <table class="tight">
+            <thead><tr><th>Company</th><th>What happens</th><th>Experience</th><th>Warnings</th></tr></thead>
+            <tbody>
+              <tr class="highlight"><td>Notion</td><td>Agents pause at next monthly boundary — not mid-workflow</td><td style="color:var(--green);font-weight:700;">Excellent</td><td>Proactive alerts + usage dashboard</td></tr>
+              <tr><td>Intercom</td><td>Transition to per-resolution billing</td><td style="color:var(--green);font-weight:700;">Excellent</td><td>Trial countdown + resolution tracking</td></tr>
+              <tr><td>Salesforce</td><td>PAYG after free credits</td><td style="color:var(--green);font-weight:700;">Good</td><td>Flex credit balance</td></tr>
+              <tr><td>Airtable</td><td>Buy more in-product; fields stop generating</td><td style="color:var(--orange);font-weight:700;">Moderate</td><td>Credit usage logs</td></tr>
+              <tr><td>ClickUp</td><td>Falls back to limited AI; Super Agent disabled</td><td style="color:var(--orange);font-weight:700;">Moderate</td><td>Balance + in-product nudges</td></tr>
+              <tr><td>Base44</td><td>Hard stop — silent until monthly reset</td><td style="color:var(--red);font-weight:700;">Poor</td><td>Credit counter visible</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout">Gold standard: Notion — finish current runs; pause at billing boundary; resume after purchase.</div>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="13">
+      <div class="slide-inner">
+        <p class="kicker">Stage 5</p>
+        <h2>Conversion — how they ask for money</h2>
+        <p class="muted">Smoothness at the paywall impacts conversion rate.</p>
+        <div style="overflow-x:auto;">
+          <table class="tight">
+            <thead><tr><th>Company</th><th>Conversion trigger</th><th>Conversion UX</th></tr></thead>
+            <tbody>
+              <tr class="highlight"><td>Notion</td><td>Grace period ends; usage dashboard builds cost awareness</td><td>Admin buys credits in-product; agents auto-resume; no sales call</td></tr>
+              <tr><td>Intercom</td><td>14-day trial ends</td><td>Billing if CC on file; per-resolution scales with usage</td></tr>
+              <tr><td>Airtable</td><td>Credits depleted</td><td>“Buy more” in-product; instant purchase; agents resume</td></tr>
+              <tr><td>ClickUp</td><td>Trial limits; Super features locked</td><td>Upsell with tier comparison ($7 Brain → $22 Everything AI / user)</td></tr>
+              <tr><td>Base44</td><td>Monthly credits exhausted</td><td>Upgrade prompt + plan comparison; monthly reset = retry window</td></tr>
+              <tr><td>Salesforce</td><td>Free credits exhausted</td><td>Flex purchase or PAYG; account team for larger deployments</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="14">
+      <div class="slide-inner">
+        <p class="kicker">Head-to-head</p>
+        <h2>Direct competitors — experience matrix</h2>
+        <p class="muted">From competitive research (Notion, ClickUp, Airtable, Base44, Intercom).</p>
+        <div style="overflow-x:auto;">
+          <table class="tight">
+            <thead><tr><th>Dimension</th><th>Notion</th><th>ClickUp</th><th>Airtable</th><th>Base44</th><th>Intercom</th></tr></thead>
+            <tbody>
+              <tr><td>Time to first agent</td><td>Minutes</td><td>15–30 min</td><td>Under 5 min</td><td>Under 5 min</td><td>30–60 min</td></tr>
+              <tr><td>Setup method</td><td>Describe intent</td><td>6-step guided</td><td>Add field to table</td><td>Toggle + chat</td><td>4-stage wizard</td></tr>
+              <tr><td>Agent paradigm</td><td>Background autonomous</td><td>Workspace assistant</td><td>Smart data field</td><td>Chat interface</td><td>Customer-facing bot</td></tr>
+              <tr><td>Where value shows</td><td>Async — check later</td><td>Task context</td><td>Inline in cells</td><td>Real-time chat</td><td>Dashboard metrics</td></tr>
+              <tr><td>Limit experience</td><td>Pause at boundary</td><td>Degrade to basic</td><td>Buy more instantly</td><td>Hard stop</td><td>Auto-bill</td></tr>
+              <tr><td>Standout UX</td><td>Self-config</td><td>Rollout framework</td><td>No separate builder</td><td>Model cost transparency</td><td>Test before deploy</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="15">
+      <div class="slide-inner">
+        <p class="kicker">Insights</p>
+        <h2>What works vs what fails</h2>
+        <div class="two-col">
+          <div class="card good"><h3>Works</h3><ul style="margin:8px 0 0 1rem;font-size:0.85rem;"><li>Describe intent → agent configures itself</li><li>Value inline in primary surface</li><li>Preview / dry run before live</li><li>Usage visible from day one</li></ul></div>
+          <div class="card bad"><h3>Fails</h3><ul style="margin:8px 0 0 1rem;font-size:0.85rem;"><li>Long prerequisite chains</li><li>Blank builder, no first use case</li><li>Async-only aha in short trials</li><li>Hard cutoff when credits end</li></ul></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="16">
+      <div class="slide-inner">
+        <p class="kicker">Recommendations</p>
+        <h2>Six UX principles for monday Agents trial</h2>
+        <ol style="margin:12px 0 0 1.2rem;font-size:0.9rem;">
+          <li style="margin:10px 0;"><strong>Describe, don’t configure</strong> — conversational setup.</li>
+          <li style="margin:10px 0;"><strong>Inline value</strong> — outputs on boards/items, not only admin UI.</li>
+          <li style="margin:10px 0;"><strong>Dry run</strong> — preview before real execution.</li>
+          <li style="margin:10px 0;"><strong>Suggested first agent</strong> — no empty state.</li>
+          <li style="margin:10px 0;"><strong>Never interrupt active work</strong> — pause at boundary.</li>
+          <li style="margin:10px 0;"><strong>Transparent usage</strong> — credits/dashboard during trial.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="slide dark" data-slide="17">
+      <div class="slide-inner">
+        <p class="kicker">monday draft · platform-agents-trial-flow.md</p>
+        <h2>Problem &amp; proposed solution</h2>
+        <ul>
+          <li><strong>Problem:</strong> Shared account AI credits — users may exhaust them on other AI, then hit a wall at <strong>Activate</strong> after full agent setup.</li>
+          <li><strong>Proposal:</strong> <strong>Dedicated agent trial</strong> — 1,000 credits · 30 days · account-level — <strong>gated at execution</strong> (Activate / Run now), not during setup.</li>
+          <li><strong>Rationale:</strong> Sunk setup + curiosity → higher trial start; separate pool guarantees exposure to agents.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="18">
+      <div class="slide-inner">
+        <p class="kicker">monday flow</p>
+        <h2>End-to-end (draft)</h2>
+        <pre class="flow">Agent setup (no gate)
+    → User clicks "Activate" or "Run now"
+        → Trial Start Modal ("Unlock Platform Agents" · 1K credits · 30d · no CC)
+            → Trial active: indicator + activity dashboard + warnings at 80% / 100%
+                → End-of-trial modal (value summary / performance review)
+                    → Graceful pause: finish current runs, preserve config, read-only dashboard</pre>
+        <p class="muted">Post-trial behavior explicitly aligned with <strong>Notion-style graceful pause</strong>, not Base44-style hard stop.</p>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="19">
+      <div class="slide-inner">
+        <p class="kicker">Draft metrics &amp; validation</p>
+        <h2>Success metrics &amp; open questions</h2>
+        <table>
+          <thead><tr><th>Metric (draft targets)</th><th>Target</th></tr></thead>
+          <tbody>
+            <tr><td>Trial start rate</td><td>&gt;60%</td></tr>
+            <tr><td>Tasks completed in trial</td><td>&gt;20 avg</td></tr>
+            <tr><td>Credit utilization</td><td>&gt;70%</td></tr>
+            <tr><td>Trial → paid (14d)</td><td>&gt;15%</td></tr>
+            <tr><td>Time to first agent run</td><td>&lt;5 min</td></tr>
+          </tbody>
+        </table>
+        <p class="muted" style="margin-top:14px;"><strong>Validate:</strong> Is 1K credits enough for aha? 30d vs Notion-length grace? Account pool vs one user burning credits? Separate trials vs fatigue? Credit cost per task type?</p>
+      </div>
+    </section>
+
+    <section class="slide" data-slide="20">
+      <div class="slide-inner">
+        <p class="kicker">Sources</p>
+        <h2>Research files</h2>
+        <ul>
+          <li><code>agent-trial-competitive-research.html</code> — 11 competitors, patterns, journey, principles</li>
+          <li><code>competitor-trial-research.md</code> — enterprise/agentic supplement</li>
+          <li><code>platform-agents-trial-flow.md</code> — monday trial draft</li>
+        </ul>
+        <p class="muted" style="margin-top:20px;">Open this file in a browser. Use <strong>Space</strong> / arrow keys or the buttons to move between slides. <strong>20 slides.</strong> Print to PDF for sharing.</p>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="slide-num" id="slideNum">1 / 20</div>
+  <div class="nav">
+    <button type="button" id="prevBtn" aria-label="Previous slide">← Prev</button>
+    <button type="button" id="nextBtn" aria-label="Next slide">Next →</button>
+  </div>
+
+  <script>
+    (function () {
+      var slides = document.querySelectorAll('.slide');
+      var total = slides.length;
+      var idx = 0;
+      var numEl = document.getElementById('slideNum');
+
+      function go(i) {
+        idx = Math.max(0, Math.min(total - 1, i));
+        slides[idx].scrollIntoView({ behavior: 'smooth', block: 'start' });
+        numEl.textContent = (idx + 1) + ' / ' + total;
+      }
+
+      document.getElementById('prevBtn').addEventListener('click', function () { go(idx - 1); });
+      document.getElementById('nextBtn').addEventListener('click', function () { go(idx + 1); });
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown' || e.key === 'Enter') {
+          e.preventDefault();
+          go(idx + 1);
+        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+          e.preventDefault();
+          go(idx - 1);
+        } else if (e.key === 'Home') { go(0); }
+        else if (e.key === 'End') { go(total - 1); }
+      });
+
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (en.isIntersecting && en.intersectionRatio > 0.5) {
+            var s = en.target.getAttribute('data-slide');
+            if (s) {
+              idx = parseInt(s, 10) - 1;
+              numEl.textContent = s + ' / ' + total;
+            }
+          }
+        });
+      }, { threshold: [0.5] });
+
+      slides.forEach(function (sl) { observer.observe(sl); });
+    })();
+  </script>
+</body>
+</html>

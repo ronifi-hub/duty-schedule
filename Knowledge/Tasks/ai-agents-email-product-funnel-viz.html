@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Email → product funnel</title>
+  <style>
+    :root {
+      --primary: #6161ff;
+      --bg: #0f111a;
+      --card: #16182a;
+      --text: #f4f4f7;
+      --muted: #9ca3af;
+      --border: #2a2d42;
+      --green: #00ca72;
+      --amber: #f5a623;
+      --magenta: #c084fc;
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 28px 20px 48px;
+    }
+    .wrap {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 0 0 8px;
+    }
+    .sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin: 0 0 20px;
+      line-height: 1.5;
+    }
+    .sub code { font-size: 11px; color: #c4c4e8; }
+    .sub a { color: var(--primary); }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 22px 28px;
+      box-shadow: 0 20px 48px rgba(0, 0, 0, 0.35);
+    }
+    h2 {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--muted);
+      margin: 0 0 16px;
+      font-weight: 600;
+    }
+    .inputs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 14px;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 520px) {
+      .inputs { grid-template-columns: 1fr; }
+    }
+    label span {
+      display: block;
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    input[type="number"] {
+      width: 100%;
+      background: #0a0c14;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 10px 12px;
+      font-size: 15px;
+      font-variant-numeric: tabular-nums;
+    }
+    input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 22px;
+    }
+    button {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 9px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button.secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    /* Tapered funnel */
+    .funnel-wrap {
+      max-width: 520px;
+      margin: 0 auto 28px;
+    }
+    .funnel-stage {
+      margin: 0 auto 6px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      border-radius: 6px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      box-sizing: border-box;
+      transition: width 0.35s ease, clip-path 0.35s ease;
+      clip-path: polygon(4% 0, 96% 0, 100% 100%, 0 100%);
+      min-width: 120px;
+    }
+    .funnel-stage .name { font-weight: 600; font-size: 13px; }
+    .funnel-stage .n {
+      font-variant-numeric: tabular-nums;
+      font-size: 15px;
+      opacity: 0.95;
+    }
+    .funnel-stage .pct {
+      font-size: 11px;
+      font-weight: 500;
+      opacity: 0.75;
+      margin-left: 8px;
+    }
+    .c1 { background: linear-gradient(90deg, #4a4a8f, var(--primary)); }
+    .c2 { background: linear-gradient(90deg, #2d4a7a, #3d8fd9); }
+    .c3 { background: linear-gradient(90deg, #2d5a45, var(--green)); }
+    .c4 { background: linear-gradient(90deg, #5a3d6b, var(--magenta)); }
+    .bars h2 { margin-top: 8px; }
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .lab {
+      width: 168px;
+      flex-shrink: 0;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.3;
+    }
+    .bar-bg {
+      flex: 1;
+      height: 30px;
+      background: #0a0c14;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .bar-bg > div {
+      height: 100%;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #fff;
+      transition: width 0.25s ease;
+    }
+    .bv { width: 52px; text-align: right; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .split {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 12px;
+      padding: 12px 14px;
+      background: #0a0c14;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      line-height: 1.5;
+    }
+    .split strong { color: var(--amber); }
+    .foot {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 18px;
+      line-height: 1.55;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Admin email → product funnel</h1>
+    <p class="sub">
+      Unique users: Braze admin campaigns (14d) → delivered → open/click →
+      <strong>published agent run (success)</strong> or <strong>trial AI credits consumed</strong> (same window, delivered cohort).
+      SQL: <code>Knowledge/Tasks/sql-ai-agents-email-to-product-funnel.sql</code>.
+      Sample counts from a Kremer run (refresh when you re-query).
+    </p>
+
+    <div class="card">
+      <h2>Counts (edit or reset)</h2>
+      <div class="inputs">
+        <label><span>Sent</span><input type="number" id="s" min="0" step="1" /></label>
+        <label><span>Delivered</span><input type="number" id="d" min="0" step="1" /></label>
+        <label><span>Open or click</span><input type="number" id="e" min="0" step="1" /></label>
+        <label><span>Agent OR trial (unique)</span><input type="number" id="o" min="0" step="1" /></label>
+        <label><span>Agent only (split)</span><input type="number" id="a" min="0" step="1" /></label>
+        <label><span>Trial credits only (split)</span><input type="number" id="t" min="0" step="1" /></label>
+      </div>
+      <div class="actions">
+        <button type="button" id="loadKremer">Load last Kremer sample</button>
+        <button type="button" class="secondary" id="clear">Clear</button>
+      </div>
+
+      <h2>Funnel (width ∝ sent)</h2>
+      <div class="funnel-wrap" id="taper" aria-hidden="true"></div>
+
+      <div class="bars">
+        <h2>Same data — bar view</h2>
+        <div id="bars"></div>
+      </div>
+
+      <div class="split" id="splitNote"></div>
+      <p class="foot">
+        Last step is <strong>union</strong> of agent users and trial-credit users (not sum of 281 + 3 if one person did both).
+        Bar width uses % of <strong>sent</strong>; the last step is often a thin sliver — the number on the right is the truth.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    function v(id) {
+      const n = parseInt($(id).value, 10);
+      return Number.isFinite(n) && n >= 0 ? n : 0;
+    }
+
+    function pct(n, den) {
+      if (!den) return '—';
+      return ((100 * n) / den).toFixed(2) + '%';
+    }
+
+    function render() {
+      const s = v('s');
+      const d = v('d');
+      const e = v('e');
+      const o = v('o');
+      const a = v('a');
+      const t = v('t');
+      const base = Math.max(s, 1);
+      const maxW = 100;
+
+      const stages = [
+        { n: s, label: 'Sent', cls: 'c1' },
+        { n: d, label: 'Delivered', cls: 'c2' },
+        { n: e, label: 'Open or click', cls: 'c3' },
+        { n: o, label: 'Agent run OR trial credits', cls: 'c4' }
+      ];
+
+      const taper = $('taper');
+      taper.innerHTML = stages.map((st) => {
+        const rawPct = (maxW * st.n) / base;
+        const wPct = st.n === 0 ? 0 : Math.max(rawPct, 0.45);
+        return `<div class="funnel-stage ${st.cls}" style="width:${wPct}%">
+          <span class="name">${st.label}<span class="pct">of sent ${pct(st.n, s)}</span></span>
+          <span class="n">${st.n.toLocaleString()}</span>
+        </div>`;
+      }).join('');
+
+      const wBar = (n) => {
+        if (n <= 0) return '0%';
+        const p = (100 * n) / base;
+        return Math.max(p, 0.5) + '%';
+      };
+      $('bars').innerHTML = stages.map((st) => `
+        <div class="row">
+          <span class="lab">${st.label}</span>
+          <div class="bar-bg"><div class="${st.cls}" style="width:${wBar(st.n)}">${st.n ? st.n.toLocaleString() : ''}</div></div>
+          <span class="bv">${st.n.toLocaleString()}</span>
+        </div>
+      `).join('');
+
+      $('splitNote').innerHTML =
+        `<strong>Split (delivered cohort)</strong> — Agent runs (success): <strong>${a.toLocaleString()}</strong> · Trial credits consumed: <strong>${t.toLocaleString()}</strong> · Either (deduped): <strong>${o.toLocaleString()}</strong>`;
+    }
+
+    function loadKremer() {
+      $('s').value = 148332;
+      $('d').value = 147320;
+      $('e').value = 61109;
+      $('o').value = 284;
+      $('a').value = 281;
+      $('t').value = 3;
+      render();
+    }
+
+    ['s', 'd', 'e', 'o', 'a', 't'].forEach((id) => $(id).addEventListener('input', render));
+
+    $('loadKremer').addEventListener('click', loadKremer);
+    $('clear').addEventListener('click', () => {
+      ['s', 'd', 'e', 'o', 'a', 't'].forEach((id) => { $(id).value = ''; });
+      render();
+    });
+
+    loadKremer();
+  </script>
+</body>
+</html>

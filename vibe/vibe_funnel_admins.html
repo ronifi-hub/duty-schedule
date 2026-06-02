@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vibe funnel: Prompt sent → Publish clicked (Admins)</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0 0 0.5rem;
+      color: #f8fafc;
+    }
+    .subtitle {
+      font-size: 0.875rem;
+      color: #94a3b8;
+      margin-bottom: 2rem;
+    }
+    .charts {
+      display: grid;
+      gap: 2rem;
+      max-width: 1200px;
+    }
+    .chart-card {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
+    }
+    .chart-card h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 0 0 1rem;
+      color: #cbd5e1;
+    }
+    .chart-container {
+      position: relative;
+      height: 340px;
+    }
+    .legend-inline {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 1rem;
+      font-size: 0.8125rem;
+      color: #94a3b8;
+    }
+    .legend-inline span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .legend-inline .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+      margin-top: 1rem;
+    }
+    th, td {
+      padding: 0.5rem 0.75rem;
+      text-align: right;
+      border-bottom: 1px solid #334155;
+    }
+    th {
+      color: #94a3b8;
+      font-weight: 500;
+    }
+    th:first-child, td:first-child { text-align: left; }
+    td:first-child { font-weight: 500; color: #cbd5e1; }
+  </style>
+</head>
+<body>
+  <h1>Vibe funnel (user level, admins only)</h1>
+  <p class="subtitle"><strong>User-level</strong> funnel: Seeing vibe → Prompt sent → Preview rendered → Clicked publish. <strong>Admins only</strong> (is_admin = 1 in bigbrain.final.dusers). Source: BigBrain. Query: <code>user_level_vibe_funnel_admins_only.sql</code>.</p>
+
+  <div class="charts">
+    <div class="chart-card">
+      <h2>User-level funnel (admins): 4 steps</h2>
+      <div class="chart-container">
+        <canvas id="funnelChart"></canvas>
+      </div>
+      <div class="legend-inline">
+        <span><span class="dot" style="background:#3b82f6"></span> Seeing vibe</span>
+        <span><span class="dot" style="background:#8b5cf6"></span> Prompt sent</span>
+        <span><span class="dot" style="background:#10b981"></span> Preview rendered</span>
+        <span><span class="dot" style="background:#f59e0b"></span> Clicked publish</span>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h2>Conversion: Seeing vibe → Clicked publish (%)</h2>
+      <div class="chart-container">
+        <canvas id="cvrChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Account-level funnel by entry point (admins only) -->
+    <div class="section-divider" style="margin: 3rem 0 1.5rem; padding-top: 2rem; border-top: 1px solid #334155;">
+      <h1 style="font-size: 1.35rem; margin-bottom: 0.5rem;">Account-level funnel by entry point (admins only)</h1>
+      <p class="subtitle" style="margin-bottom: 1.5rem;">Same 4 steps: <strong>Seeing vibe → Prompt sent → Preview rendered → Clicked publish</strong>. Distinct <strong>accounts</strong> per step. Entry points: <strong>Board view</strong>, <strong>Landing page</strong>, <strong>Web</strong>, <strong>Icon</strong>, <strong>Add view menu</strong>, <strong>Left pane</strong>. Query: <code>account_level_vibe_funnel_admins_by_entry_point.sql</code>.</p>
+    </div>
+    <div class="chart-card">
+      <h2>Funnel by entry point (accounts)</h2>
+      <div class="chart-container">
+        <canvas id="funnelByEntryChart"></canvas>
+      </div>
+      <div class="legend-inline">
+        <span><span class="dot" style="background:#3b82f6"></span> Board view</span>
+        <span><span class="dot" style="background:#06b6d4"></span> Landing page</span>
+        <span><span class="dot" style="background:#10b981"></span> Web</span>
+        <span><span class="dot" style="background:#f59e0b"></span> Icon</span>
+        <span><span class="dot" style="background:#a855f7"></span> Add view menu</span>
+        <span><span class="dot" style="background:#ec4899"></span> Left pane</span>
+      </div>
+    </div>
+    <div class="chart-card">
+      <h2>Accounts per step by entry point</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Step</th>
+            <th>Board view</th>
+            <th>Landing page</th>
+            <th>Web</th>
+            <th>Icon</th>
+            <th>Add view menu</th>
+            <th>Left pane</th>
+          </tr>
+        </thead>
+        <tbody id="entryPointTableBody">
+          <tr><td>Seeing vibe</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr><td>Prompt sent</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr><td>Preview rendered</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+          <tr><td>Clicked publish</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- PLG segments roadmap: more ways to slice "Clicked publish" -->
+    <div class="section-divider" style="margin: 3rem 0 1.5rem; padding-top: 2rem; border-top: 1px solid #334155;">
+      <h1 style="font-size: 1.35rem; margin-bottom: 0.5rem;">PLG segments: improve Clicked publish</h1>
+      <p class="subtitle" style="margin-bottom: 1.5rem;">Additional segment ideas (Product-Led Growth). Details and query hints: <code>PLG_SEGMENTS_PUBLISH_CLICK.md</code>.</p>
+    </div>
+    <div class="chart-card" style="max-width: 900px;">
+      <h2>Segment checklist (priority order)</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Segment</th>
+            <th>PLG lens</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Entry point</td><td>Where they enter → optimize by surface</td><td>Done (this dashboard)</td></tr>
+          <tr><td>Prompts before first publish</td><td>Aha strength by “investment”</td><td>Done (prompt effect dashboard)</td></tr>
+          <tr><td><strong>Entry × prompt bucket</strong></td><td>Cross-segment: best CVR by entry + prompts</td><td>To do</td></tr>
+          <tr><td><strong>Time to publish</strong> (same session vs next)</td><td>Speed of activation</td><td>To do</td></tr>
+          <tr><td><strong>Time-to-publish buckets</strong> (0–5m, 5–15m, …)</td><td>Sweet spot and drop-off</td><td>To do</td></tr>
+          <tr><td>Preview outcome (success vs error)</td><td>First-preview quality</td><td>To do (if events exist)</td></tr>
+          <tr><td>Previews / regenerations before publish</td><td>Iteration behavior</td><td>To do</td></tr>
+          <tr><td>First-time vs return Vibe user</td><td>Activation vs re-engagement</td><td>To do</td></tr>
+          <tr><td>First-see cohort (week/month)</td><td>CVR trend over time</td><td>To do</td></tr>
+          <tr><td>Repeat publisher (1 vs 2+ publishes)</td><td>Habit / stickiness</td><td>To do</td></tr>
+        </tbody>
+      </table>
+      <h2 style="margin-top: 1.5rem;">Leading indicators (predictors of publish click)</h2>
+      <p class="subtitle" style="margin: -0.5rem 0 0.75rem;">Behaviors/context that happen <em>before</em> publish and predict higher (or lower) publish rate. See <code>PLG_SEGMENTS_PUBLISH_CLICK.md</code> → Leading indicators.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Leading indicator</th>
+            <th>Type</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Prompt count before first publish</td><td>Behavioral</td><td>Done</td></tr>
+          <tr><td>Entry point</td><td>Context</td><td>Done</td></tr>
+          <tr><td>Previews seen before first publish</td><td>Behavioral</td><td>To do</td></tr>
+          <tr><td>Regenerations before publish (edit & retry)</td><td>Behavioral</td><td>To do</td></tr>
+          <tr><td>Time from first preview to publish (&lt;1m, 1–5m, 5–15m, 15m+)</td><td>Behavioral</td><td>To do</td></tr>
+          <tr><td>Same-session vs next-session publish</td><td>Behavioral</td><td>To do</td></tr>
+          <tr><td>Time from "see vibe" to first "prompt sent" (fast vs slow)</td><td>Behavioral</td><td>To do</td></tr>
+          <tr><td>Used suggested prompt (first prompt)</td><td>Behavioral</td><td>To do (if events exist)</td></tr>
+          <tr><td>Entry × prompt bucket</td><td>Context</td><td>To do</td></tr>
+          <tr><td>First-time vs return Vibe user</td><td>Context</td><td>To do</td></tr>
+          <tr><td>First preview success vs error</td><td>Quality</td><td>To do (if events exist)</td></tr>
+          <tr><td>Preview load time (fast vs slow)</td><td>Quality</td><td>To do (if logged)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // --- User-level funnel: 4 steps (admins only) ---
+    const steps = ['Seeing vibe', 'Prompt sent', 'Preview rendered', 'Clicked publish'];
+    const colors = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b'];
+    // Placeholder: replace with results from user_level_vibe_funnel_admins_only.sql
+    const funnelValues = [4200, 3743, 3743, 1592];
+
+    new Chart(document.getElementById('funnelChart'), {
+      type: 'bar',
+      data: {
+        labels: steps,
+        datasets: [{
+          label: 'Users',
+          data: funnelValues,
+          backgroundColor: colors,
+          borderColor: colors.map(c => c),
+          borderWidth: 1
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { mode: 'index', intersect: false }
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(148,163,184,0.15)' },
+            ticks: { color: '#94a3b8' }
+          },
+          y: {
+            grid: { display: false },
+            ticks: { color: '#94a3b8' }
+          }
+        }
+      }
+    });
+
+    // Conversion: Seeing vibe → Clicked publish (single CVR for overall funnel)
+    const cvrPct = funnelValues[3] && funnelValues[0] ? Math.round((funnelValues[3] / funnelValues[0]) * 1000) / 10 : 0;
+    new Chart(document.getElementById('cvrChart'), {
+      type: 'bar',
+      data: {
+        labels: ['Seeing vibe → Clicked publish'],
+        datasets: [{
+          label: 'CVR (%)',
+          data: [cvrPct],
+          backgroundColor: '#3b82f6',
+          borderColor: '#60a5fa',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: (ctx) => ctx.parsed.y + '%' } }
+        },
+        scales: {
+          y: {
+            min: 0,
+            max: Math.min(100, Math.ceil(cvrPct / 10) * 10 + 10),
+            grid: { color: 'rgba(148,163,184,0.15)' },
+            ticks: { color: '#94a3b8', callback: (v) => v + '%' }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { color: '#94a3b8' }
+          }
+        }
+      }
+    });
+
+    // --- Account-level funnel by entry point (admins only): 4 steps, 5 entry points ---
+    const stepsForEntry = ['Seeing vibe', 'Prompt sent', 'Preview rendered', 'Clicked publish'];
+    const entryPoints = ['Board view', 'Landing page', 'Web', 'Icon', 'Add view menu', 'Left pane'];
+    const entryColors = {
+      'Board view': '#3b82f6',
+      'Landing page': '#06b6d4',
+      'Web': '#10b981',
+      'Icon': '#f59e0b',
+      'Add view menu': '#a855f7',
+      'Left pane': '#ec4899'
+    };
+    // Placeholder: replace with results from account_level_vibe_funnel_admins_by_entry_point.sql
+    const entryFunnelData = {
+      'Board view': [820, 760, 740, 310],
+      'Landing page': [540, 500, 490, 200],
+      'Web': [610, 560, 540, 235],
+      'Icon': [420, 390, 380, 165],
+      'Add view menu': [280, 260, 255, 110],
+      'Left pane': [350, 320, 310, 135]
+    };
+
+    new Chart(document.getElementById('funnelByEntryChart'), {
+      type: 'bar',
+      data: {
+        labels: stepsForEntry,
+        datasets: entryPoints.map(ep => ({
+          label: ep,
+          data: entryFunnelData[ep],
+          backgroundColor: entryColors[ep],
+          borderColor: entryColors[ep],
+          borderWidth: 1
+        }))
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'top' },
+          tooltip: { mode: 'index', intersect: false }
+        },
+        scales: {
+          x: {
+            stacked: false,
+            grid: { color: 'rgba(148,163,184,0.15)' },
+            ticks: { color: '#94a3b8' }
+          },
+          y: {
+            stacked: false,
+            grid: { display: false },
+            ticks: { color: '#94a3b8' }
+          }
+        }
+      }
+    });
+
+    const tbody = document.getElementById('entryPointTableBody');
+    stepsForEntry.forEach((step, i) => {
+      const row = tbody.rows[i];
+      if (row) {
+        entryPoints.forEach((ep, j) => {
+          row.cells[j + 1].textContent = entryFunnelData[ep][i].toLocaleString();
+        });
+      }
+    });
+  </script>
+</body>
+</html>

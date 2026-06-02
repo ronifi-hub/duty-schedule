@@ -1,0 +1,67 @@
+# Figma Integration Rules
+
+## Workspace Context
+
+This is a PM workspace — not a frontend codebase. There are no React/Vue components, no design token files, no component library. When Figma designs are referenced, the goal is one of:
+
+1. **Document a flow** — Extract screens/modals from Figma to describe product flows in markdown
+2. **Write a spec** — Reference Figma designs as the source of truth for PRDs and product docs
+3. **Create an HTML presentation** — Build standalone HTML reports/slides that may borrow visual language from Figma
+
+## How to Use Figma Designs
+
+### Extracting design context
+- Use `get_design_context` as the primary tool — it returns code, screenshots, and metadata
+- Use `get_screenshot` when you only need a visual reference for documentation
+- Use `get_metadata` to explore a Figma file's structure and find specific node IDs
+
+### URL parsing
+Extract `fileKey` and `nodeId` from Figma URLs:
+- `figma.com/design/:fileKey/:fileName?node-id=:nodeId` → convert `-` to `:` in nodeId
+- `figma.com/design/:fileKey/branch/:branchKey/:fileName` → use branchKey as fileKey
+
+### When referencing designs in docs
+- Describe the design's content, layout, and copy — don't paste raw code output
+- Note modal patterns (media modals, confirmation dialogs, banners) by their monday.com pattern name
+- Capture key UI copy verbatim for spec accuracy
+- Note CTAs, dismiss behavior, and role-based variants
+
+## HTML Report Styling
+
+When creating standalone HTML files in this workspace, follow the established patterns:
+
+### Color palette (monday.com-aligned)
+```css
+:root {
+  --primary: #6161ff;
+  --primary-light: #ebebff;
+  --dark: #1a1a2e;
+  --gray-900: #1e1e2f;
+  --gray-600: #6b7280;
+  --green: #00ca72;
+  --red: #e44258;
+  --orange: #fdab3d;
+  --blue: #579bfc;
+  --radius: 12px;
+}
+```
+
+### Conventions
+- All styles inline in `<style>` blocks (no external CSS files)
+- Responsive: include `@media (max-width: 768px)` breakpoints
+- Charts: use Chart.js from CDN when needed
+- Use system font stack: `-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif`
+
+## FigJam Diagrams
+
+Use `generate_diagram` to create flow diagrams in FigJam for product flows. Use simple Mermaid syntax with LR direction by default. Apply color styling sparingly to distinguish flow stages.
+
+## File Placement
+
+- Product flow docs → `monday agents/` or relevant product folder
+- Research and competitive analysis → `Knowledge/Research/`
+- Active task specs → `.cursor/Knowledge/Tasks/`
+
+## Figma MCP + design system (no codebase)
+
+This workspace has **no in-repo tokens or components**. For MCP integration (tokens, libraries, FigJam, building Figma from flows), see [`figma-mcp-pm-workspace.mdc`](figma-mcp-pm-workspace.mdc).
